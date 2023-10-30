@@ -1,2 +1,3 @@
-# aoc2023
-Advent of Code 2023
+# Advent of Code 2023
+
+Preparing for this years event
