@@ -76,26 +76,21 @@ function part2(input) {
     var x = 1;
     count = 2;
     squares[pos.toString()] = new Square(pos, value, x);
-    while (value < num) {
-        if (count < 1000) {
-            console.log("count: " + count + " pos: " + pos.toString() + " dirs[dir]: " + dirs[dir] + " x: " + x);
-        }
+    while (value <= num) {
+        // if (count < 1000) {
+        //     console.log("count: " + count + " pos: " + pos.toString() + " dirs[dir]: " + dirs[dir] + " x: " + x);
+        // }
         pos = new Pos(pos.x + dirs[dir].x, pos.y + dirs[dir].y);
-        value = 0;
-        for (var i = -1; i <= 1; i++) {
-            for (var j = -1; j <=1; j++) {
-                var p = new Pos(pos.x + i, pos.y + j);
-                var s = squares[p.toString()];
-                if (s != undefined) {
-                    value = value + s.value;
-                }
-            }
-        }
+
+        value = sumAdjecentSquares(pos, squares);
         squares[pos.toString()] = new Square(pos, value, x);
+
         if (pos.x == x && pos.y == x) {
             x = x + 1;
             dir = 3;
             pos = new Pos(pos.x + dirs[dir].x, pos.y + dirs[dir].y);
+            value = sumAdjecentSquares(pos, squares);
+            squares[pos.toString()] = new Square(pos, value, x);
             count = count + 1;
             dir = 0;
         } else if (Math.abs(pos.x) == x && Math.abs(pos.y) == x) {
@@ -103,10 +98,37 @@ function part2(input) {
         }
         count = count + 1;
     }
-    for (const [key, value] of Object.entries(squares)) {
-        console.log(key + " " + value.toString());
+
+    for (var j = -x; j <= x; j++) {
+        var cols = [];
+        for (var i = -x; i <= x; i++) {
+            var p = new Pos(i, j);
+            var s = squares[p.toString()];
+            if (s != undefined) {
+                cols.push(s.value.toString().padStart(7));
+            } else {
+                cols.push(''.padStart(7));
+            }
+        }
+        console.log(cols.join(' '));
     }
+    
+
     return value;
 }
 
-console.log(part2(806));
+function sumAdjecentSquares(pos, squares) {
+    var result = 0;
+    for (var i = -1; i <= 1; i++) {
+        for (var j = -1; j <= 1; j++) {
+            var p = new Pos(pos.x + i, pos.y + j);
+            var s = squares[p.toString()];
+            if (s != undefined) {
+                result += s.value;
+            }
+        }
+    }
+    return result;
+}
+
+console.log(part2('redacted'));
