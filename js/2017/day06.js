@@ -1,6 +1,6 @@
 var banks = "4	1	15	12	0	9	9	5	5	8	7	3	14	5	12	3".split("\t").map(x => parseInt(x));
-var configurations = new Set();
-configurations.add(banks.join());
+// var banks = "0	2	7	0".split("\t").map(x => parseInt(x));
+var configurations = {}
 
 var next = function() {
     var maxIndex = banks.indexOf(Math.max(...banks));
@@ -9,15 +9,17 @@ var next = function() {
         banks[(maxIndex + i + 1) % banks.length]++;
         banks[maxIndex]--;
     }
-    console.log(banks.join());
+    // console.log(banks.join());
 }
 
 var count = 1;
+configurations[banks.join()] = count;
 next();
-while (!configurations.has(banks.join())) {
+while (configurations[banks.join()] == undefined) {
     count++;
-    configurations.add(banks.join());
+    configurations[banks.join()] = count;
     next();
 }
 
-console.log(count);
+console.log(count); // part1
+console.log(count - configurations[banks.join()] + 1); // part2
