@@ -1,3 +1,3 @@
 # Advent of Code 2023
 
-Preparing for this years event
+Starting out by using javascript. Lerning experience.
