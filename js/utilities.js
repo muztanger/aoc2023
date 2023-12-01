@@ -1,9 +1,9 @@
 const fs = require('node:fs/promises');
 
-async function fetchInput(day) {
+exports.fetchInput = async function (day) {
   const sessionCookie = await fs.readFile('session_cookie.txt', { encoding: 'utf8' });
 
-  const response = await fetch(`https://adventofcode.com/2022/day/${day}/input`, {
+  const response = await fetch(`https://adventofcode.com/2023/day/${day}/input`, {
     headers: {
       cookie: `session=${sessionCookie}`
     }
@@ -17,10 +17,3 @@ async function fetchInput(day) {
   return input.trim();
 }
 
-fetchInput(new Date().getDate())
-  .then(input => {
-    console.log(input);
-  })
-  .catch(error => {
-    console.error(error);
-  });
