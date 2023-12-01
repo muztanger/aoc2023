@@ -2,7 +2,8 @@ const ut = require('./utilities.js');
 const fs = require('node:fs');
 
 var day = new Date().getDate();
-const filePath = `day${day.toString().padStart(2, '0')}.in`;
+const inputFilePath = `day${day.toString().padStart(2, '0')}.in`;
+const dayFilePath = `day${day.toString().padStart(2, '0')}.js`;
 
 async function writeInputToFile(filePath) {
     const input = await ut.fetchInput(day);
@@ -15,8 +16,18 @@ async function writeInputToFile(filePath) {
     });
 }
 
-if (fs.existsSync(filePath)) {
-    console.log(`${filePath} already exists.`);
+if (fs.existsSync(inputFilePath)) {
+    console.log(`${inputFilePath} already exists.`);
 } else {
-    writeInputToFile(filePath);
+    writeInputToFile(inputFilePath);
+}
+
+if (!fs.existsSync(dayFilePath)) {
+    fs.copyFile('template.js', dayFilePath, (err) => {
+        if (err) {
+            console.error("Error copying template:", err);
+        } else {
+            console.log(`Copied template to ${dayFilePath} successfully.`);
+        }
+    });
 }
