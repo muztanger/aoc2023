@@ -3,10 +3,8 @@
  * @returns {Promise<string>} The fetched input.
  * @throws {Error} If failed to fetch the input.
  */
-const fs = require('./node_modules/fs');
-const fetch = import('./node_modules/node-fetch');
-
-
+const fs = require('fs');
+const fetch = require('node-fetch');
 
 async function fetchInput() {
     const sessionCookie = fs.readFileSync('../session_cookie.txt', 'utf8').trim();
