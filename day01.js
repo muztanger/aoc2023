@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const ut = require('../utilities.js');
+const ut = require('./utilities.js');
 
 const input = ut.fetchInput(1);
 
