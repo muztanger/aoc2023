@@ -1,6 +1,6 @@
 # Advent of Code 2023
 
-Starting out by using javascript. Lerning experience.
+This year I am learning javascript.
 
 ## Run the code
 The following example runs day 1
