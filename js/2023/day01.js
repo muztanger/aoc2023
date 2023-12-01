@@ -14,15 +14,17 @@ zoneight234
 8threefourkkkhvc68four`;
 var dict = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
-async function part2(input) {
+async function calc(input, part = 1) {
     input = await input;
     var sum = 0;
     for (var line of input.split('\n')) {
         var digits = new Map();
-        for (var digit in dict) {
-            var index = -1;
-            while ((index = line.indexOf(dict[digit], index + 1)) != -1) {
-                digits.set(index, parseInt(digit) + 1);
+        if (part == 2) {
+            for (var digit in dict) {
+                var index = -1;
+                while ((index = line.indexOf(dict[digit], index + 1)) != -1) {
+                    digits.set(index, parseInt(digit) + 1);
+                }
             }
         }
         for (var i in line.split('')) {
@@ -40,13 +42,28 @@ async function part2(input) {
     return sum;
 }
 
+test('Part 1', async (t) => {
+    await t.test('part1 example', async () => {
+        const result = await calc(`1abc2
+        pqr3stu8vwx
+        a1b2c3d4e5f
+        treb7uchet`, 1);
+        assert.strictEqual(result, 142);
+    });
+    await t.test('part1 input', async () => {
+        const result = await calc(input, 1);
+        assert.strictEqual(result, 54927);
+    });
+});
+
+
 test('Part 2', async (t) => {
-    await t.test('should return 365 for the example', async () => {
-        const result = await part2(inputExample);
+    await t.test('part2 example', async () => {
+        const result = await calc(inputExample, 2);
         assert.strictEqual(result, 365);
     });
-    await t.test('should return 54581 for the input', async () => {
-        const result = await part2(input);
-        assert.strictEqual(result, 54581, "Part2: Failed input");
+    await t.test('part2 input', async () => {
+        const result = await calc(input, 2);
+        assert.strictEqual(result, 54581);
     });
 });
