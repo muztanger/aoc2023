@@ -398,3 +398,6 @@ FodyWeavers.xsd
 *.sln.iml
 
 session_cookie.txt
+
+# Advent of Code
+*.input

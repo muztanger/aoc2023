@@ -1,29 +1,23 @@
-/**
- * Fetches the input from Advent of Code website.
- * @returns {Promise<string>} The fetched input.
- * @throws {Error} If failed to fetch the input.
- */
-const fs = require('fs');
-const fetch = require('node-fetch');
+const fs = require('node:fs/promises');
 
-async function fetchInput() {
-    const sessionCookie = fs.readFileSync('../session_cookie.txt', 'utf8').trim();
+async function fetchInput(day) {
+  const sessionCookie = await fs.readFile('session_cookie.txt', { encoding: 'utf8' });
 
-    const response = await fetch('https://adventofcode.com/2022/day/1/input', {
-        headers: {
-            cookie: `session=${sessionCookie}`
-        }
-    });
-
-    if (!response.ok) {
-        throw new Error(`Failed to fetch input: ${response.status} ${response.statusText}`);
+  const response = await fetch(`https://adventofcode.com/2022/day/${day}/input`, {
+    headers: {
+      cookie: `session=${sessionCookie}`
     }
+  });
+  
+  if (!response.ok) {
+      throw new Error(`Failed to fetch input: ${response.status} ${response.statusText}`);
+  }
 
-    const input = await response.text();
-    return input.trim();
+  const input = await response.text();
+  return input.trim();
 }
 
-fetchInput()
+fetchInput(new Date().getDate())
   .then(input => {
     console.log(input);
   })
