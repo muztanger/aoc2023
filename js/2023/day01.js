@@ -1009,38 +1009,31 @@ zoneight234
 8threefourkkkhvc68four`;
 var dict = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
 
-var sum = 0;
-for (var line of input.split('\n')) {
-    console.log(line);
-    var digits = new Map();
-    for (var digit in dict) {
-        index = -1;
-        while ((index = line.indexOf(dict[digit], index + 1)) != -1) {
-            console.log("found: " + dict[digit] + " at " + index);
-            digits.set(index, parseInt(digit) + 1);
+function part2(input) {
+    var sum = 0;
+    for (var line of input.split('\n')) {
+        var digits = new Map();
+        for (var digit in dict) {
+            index = -1;
+            while ((index = line.indexOf(dict[digit], index + 1)) != -1) {
+                digits.set(index, parseInt(digit) + 1);
+            }
+        }
+        for (var i in line.split('')) {
+            if (line[i] >= '0' && line[i] <= '9') {
+                digits.set(parseInt(i), parseInt(line[i]));
+            }
+        }
+        if (digits.size > 0) {
+            var sort = [...digits.keys()].map(x => parseInt(x));
+            sort.sort(function (a, b) {return a - b;});
+            var lineValue = parseInt("" + digits.get(sort[0]) + digits.get(sort[sort.length - 1]));
+            sum += lineValue;
         }
     }
-    for (var i in line.split('')) {
-        if (line[i] >= '0' && line[i] <= '9') {
-            digits.set(parseInt(i), parseInt(line[i]));
-        }
-    }
-    console.log(digits);
-    // var di = line.split('').filter(x => x >= '0' && x <= '9');
-    // console.log(di);
-    if (digits.size > 0) {
-        var sort = [...digits.keys()].map(x => parseInt(x));
-        sort.sort(function (a, b) {return a - b;});
-        console.log("sort: " + sort);
-        console.log("first: " + digits.get(sort[0]));
-        console.log("last: " + digits.get(sort[sort.length - 1]));
-        var lineValue = parseInt("" + digits.get(sort[0]) + digits.get(sort[sort.length - 1]));
-        console.log("linevalue: " + lineValue);
-        sum += lineValue;
-    }
-    
-    console.log("-------------------");
+    return sum;
 }
 
-// 54591 too high
-console.log(sum);
+console.assert((281 + 84) == part2(inputExample), "Part2 Failed example");
+console.assert(54581 == part2(input), "Part2: Failed input");
+console.log("done");
