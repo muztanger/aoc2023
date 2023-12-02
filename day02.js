@@ -1,10 +1,10 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const ut = require('./utilities.js');
 const fs = require('node:fs');
+const ut = require('./utilities.js');
+const path = require('node:path');
 
-
-const input = fs.readFileSync('day02.in', { encoding: 'utf8' });
+const input = fs.readFileSync(path.basename(__filename).replace(/\.js$/, '.in'), { encoding: 'utf8' });
 
 class Bag {
     constructor(red, green, blue) {
