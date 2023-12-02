@@ -7,10 +7,18 @@ const fs = require('node:fs');
 const input = fs.readFileSync('day02.in', { encoding: 'utf8' });
 
 class Bag {
-    constructor(blue, red, green) {
+    constructor(red, green, blue) {
         this.blue = blue;
         this.red = red;
         this.green = green;
+    }
+}
+
+class GameSet {
+    constructor() {
+        this.red = 0;
+        this.green = 0;
+        this.blue = 0;
     }
 }
 
@@ -18,60 +26,63 @@ class Game {
     constructor(bag) {
         this.id = 0;
         this.bag = bag;
+        this.sets = [];
     }
 
-    check(line) {
-        this.id = parseInt(line.split(':')[0].split(' ')[1]);
+    static parse(line, bag) {
+        var result = new Game(bag);
+        result.id = parseInt(line.split(':')[0].split(' ')[1]);
         line = line.split(':')[1].trim();
         var sets = line.split(';').map(x => x.trim());
         for (var set of sets) {
             var split = set.split(',').map(x => x.trim());
-            var b = new Bag(this.bag.blue, this.bag.red, this.bag.green);
+            var gameSet = new GameSet();
             for (var color of split.map(x => x.split(' '))) {
                 if (color[1].startsWith('blue')) {
-                    b.blue -= parseInt(color[0]);
+                    gameSet.blue = parseInt(color[0]);
                 } else if (color[1].startsWith('red')) {
-                    b.red -= parseInt(color[0]);
+                    gameSet.red = parseInt(color[0]);
                 } else if (color[1].startsWith('green')) {
-                    b.green -= parseInt(color[0]);
+                    gameSet.green = parseInt(color[0]);
                 }
             }
-            if (b.blue < 0 || b.red < 0 || b.green < 0) {
+            result.sets.push(gameSet);
+        }
+        return result;
+    }
+
+    check() {
+        for (var set of this.sets) {
+            if (set.red > this.bag.red ||  set.green > this.bag.green || set.blue > this.bag.blue) {
                 return 0;
             }
         }
         return this.id;
     }
 
-    power(line) {
-        this.id = parseInt(line.split(':')[0].split(' ')[1]);
-        line = line.split(':')[1].trim();
-        var sets = line.split(';').map(x => x.trim());
-        var b = new Bag(0, 0 ,0);
-        for (var set of sets) {
-            var split = set.split(',').map(x => x.trim());
-            for (var color of split.map(x => x.split(' '))) {
-                if (color[1].startsWith('blue')) {
-                    b.blue = Math.max(b.blue, parseInt(color[0]));
-                } else if (color[1].startsWith('red')) {
-                    b.red = Math.max(b.red, parseInt(color[0]));
-                } else if (color[1].startsWith('green')) {
-                    b.green = Math.max(b.green, parseInt(color[0])) ;
-                }
-            }
+    power() {
+        var b = new GameSet();
+        for (var set of this.sets) {
+            b.red = Math.max(b.red, set.red);
+            b.green = Math.max(b.green, set.green);
+            b.blue = Math.max(b.blue, set.blue);
         }
-        console.log(line + ":    " + b.blue + " " + b.red + " " + b.green)
         return b.blue * b.green * b.red;
     }
 }
 
-sum = 0;
-powerSum = 0;
-var id = 0;
+var part1 = 0;
+var part2 = 0;
 for (var line of input.split('\n')) {
-    var game = new Game(new Bag(14, 12, 13));
-    sum += game.check(line);
-    powerSum += game.power(line);
+    var game = Game.parse(line, new Bag(12, 13, 14));
+    part1 += game.check();
+    part2 += game.power();
 }
-console.log(sum);
-console.log(powerSum);
+
+test('Day 2 part 1', () => {
+    assert.strictEqual(part1, 1931);
+});
+
+test('Day 2 part 2', () => {
+    assert.strictEqual(part2, 83105);
+});
