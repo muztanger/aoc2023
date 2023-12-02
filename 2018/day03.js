@@ -52,4 +52,25 @@ for (var i = 0; i < claims.length; i++) {
         }
     }
 }
+
+for (var i = 0; i < claims.length; i++) {
+    var c = claims[i];
+    var overlapped = false;
+    for (var x = c.pos.x; x < c.pos.x + c.size.x; x++) {
+        for (var y = c.pos.y; y < c.pos.y + c.size.y; y++) {
+            if (overlapp.has(`${x},${y}`)) {
+                overlapped = true;
+                break;
+            }
+        }
+        if (overlapped) {
+            break;
+        }
+    }
+    if (!overlapped) {
+        console.log(c.id);
+        break;
+    }
+}
+
 console.log(overlapp.size);
