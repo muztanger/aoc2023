@@ -1,9 +1,9 @@
 const fs = require('node:fs/promises');
 
-exports.fetchInput = async function (day) {
+exports.fetchInput = async function (day, year = 2023) {
   const sessionCookie = await fs.readFile('session_cookie.txt', { encoding: 'utf8' });
 
-  const response = await fetch(`https://adventofcode.com/2023/day/${day}/input`, {
+  const response = await fetch(`https://adventofcode.com/${year}/day/${day}/input`, {
     headers: {
       cookie: `session=${sessionCookie}`
     }
