@@ -12,8 +12,9 @@ class Point {
         this.y = y;
     }
 
-    distance(other) {
-        return Math.abs(this.x - other.x) + Math.abs(this.y, other.y);
+    // Ajacent points are those that are one step away in any direction, including diagonal step.
+    adjacent(other) {
+        return Math.max(Math.abs(this.x - other.x), Math.abs(this.y - other.y)) === 1;
     }
 
     toString() {
@@ -28,18 +29,10 @@ class SchemaItem {
     }
 
     adjacent(other) {
-
         for (var x = this.point.x; x < this.point.x + this.item.length; x++) {
-            for (const dy of [-1, 0, 1]) {
-                for (const dx of [-1, 0, 1]) {
-                    if (dx === 0 && dy === 0) {
-                        continue;
-                    }
-                    // console.log(`checking ${this.point} + ${dx}, ${dy}`);
-                    if (x + dx === other.point.x && this.point.y + dy === other.point.y) {
-                        return true;
-                    }
-                }
+            const p = new Point(x, this.point.y);
+            if (p.adjacent(other.point)) {
+                return true;
             }
         }
         return false;
@@ -54,46 +47,39 @@ numbers = [];
 symbols = [];
 var i = 0;
 for (const line of input.split('\n')) {
-    {
-        var re = /(\d+)/gi;
-        var m;
-        do {
-            m = re.exec(line);
-            if (m) {
-                numbers.push(new SchemaItem(new Point(m.index, i), m[0]));
-            }
-        } while (m);
+    var m;
+    var re = /(\d+)/gi;
+    while (m = re.exec(line)) {
+        numbers.push(new SchemaItem(new Point(m.index, i), m[0]));
     }
-    {
-        var re = /([^.0-9])/gi;
-        var m;
-        do {
-            m = re.exec(line);
-            if (m) {
-                symbols.push(new SchemaItem(new Point(m.index, i), m[0]));
-            }
-        } while (m);
+    re = /([^.0-9])/gi;
+    while (m = re.exec(line)) {
+        symbols.push(new SchemaItem(new Point(m.index, i), m[0]));
     }
     i++;
 }
 
-sum = 0;
+var part1 = 0;
 for (const n of numbers) {
     for (const s of symbols) {
-        // console.log(`${n} adjacent to ${s}`);
         if (n.adjacent(s)) {
-            sum += parseInt(n.item);
-            // return;
+            part1 += parseInt(n.item);
         }
     }
 }
-console.log(sum);
 
-totRatio = 0;
+var part2 = 0;
 for (const s of symbols.filter(s => s.item === '*')) {
     const nums = numbers.filter(n => n.adjacent(s));
     if (nums.length != 2) continue;
     const ratio = parseInt(nums[0].item) * parseInt(nums[1].item);
-    totRatio += ratio;
+    part2 += ratio;
 }
-console.log(totRatio);
+
+test('part1', function () {
+    assert.strictEqual(part1, 536202);
+});
+
+test('part2', function () {
+    assert.strictEqual(part2, 78272573);
+});
