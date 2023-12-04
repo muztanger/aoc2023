@@ -18,16 +18,21 @@ var scores = new Map();
 var cards = [];
 var part1 = 0;
 for (const line of input.split('\n')) {
-    const cardId = parseInt(line.split(':')[0].split(/[\s]+/)[1].trim());
-    const data = line.split(':')[1];
-    const win = new Set(data.split('|')[0].trim().split(/[\s]+/).map(Number));
-    const my = new Set(data.split('|')[1].trim().split(/[\s]+/).map(Number));
+    const split = line.split(':');
+    
+    const cardId = parseInt(split[0].split(/[\s]+/)[1].trim());
     count[cardId] = 1;
-    var m = [...my].filter((x) => win.has(x));
-    var score = m.reduce((a, b) => a * 2, 1);
-    score = Math.floor(score / 2);
-    scores.set(cardId, [score, m.length]);
     cards.push(cardId);
+    
+    const data = split[1].split('|');
+    const win = new Set(data[0].trim().split(/[\s]+/).map(Number));
+    const my = new Set(data[1].trim().split(/[\s]+/).map(Number));
+
+    var matchWin = [...my].filter((x) => win.has(x));
+    var score = matchWin.reduce((a, b) => a * 2, 1);
+    score = Math.floor(score / 2);
+    scores.set(cardId, [score, matchWin.length]);
+    
     part1 += score;
 }
 
