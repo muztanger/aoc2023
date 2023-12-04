@@ -87,3 +87,10 @@ part1 = guard.id * minute;
 test('part1', () => {
     assert.strictEqual(part1, 151754);
 });
+
+guard = Array.from(guards.values()).sort((a, b) => Math.max(...b.minutes) - Math.max(...a.minutes))[0];
+minute = guard.minutes.indexOf(Math.max(...guard.minutes));
+
+test('part2', () => {
+    assert.strictEqual(guard.id * minute, 19896);
+});
