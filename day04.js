@@ -19,7 +19,7 @@ var cards = [];
 var part1 = 0;
 for (const line of input.split('\n')) {
     const split = line.split(':');
-    
+
     const cardId = parseInt(split[0].split(/[\s]+/)[1].trim());
     count[cardId] = 1;
     cards.push(cardId);
@@ -38,17 +38,13 @@ for (const line of input.split('\n')) {
 
 var part2 = 0;
 while (count.some((x) => x > 0)) {
-    for (const card of cards) {
-        if (count[card] == 0) continue;
-        var [score, len] = scores.get(card);
-        count[card]--;
+    for (const cardId of cards.filter((x) => count[x] > 0)) {
+        var [_, len] = scores.get(cardId);
+        
+        count[cardId]--;
         part2++;
 
-        for (var i = card + 1; i <= card + len; i++) {
-            if (i > cards.length) {
-                console.error('i', i, 'len', len, 'card', card);
-                break;
-            }
+        for (var i = cardId + 1; i <= cardId + len; i++) {
             count[i]++;
         }
     }
