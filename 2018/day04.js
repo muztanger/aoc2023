@@ -5,7 +5,7 @@ const test = require('node:test');
 const ut = require('../utilities.js');
 
 var input = fs.readFileSync("2018/"+path.basename(__filename).replace(/\.js$/, '.in'), { encoding: 'utf8' });
-input = `[1518-11-01 00:00] Guard #10 begins shift
+example = `[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-01 00:05] falls asleep
 [1518-11-01 00:25] wakes up
 [1518-11-01 00:30] falls asleep
@@ -22,6 +22,8 @@ input = `[1518-11-01 00:00] Guard #10 begins shift
 [1518-11-05 00:03] Guard #99 begins shift
 [1518-11-05 00:45] falls asleep
 [1518-11-05 00:55] wakes up`;
+
+// input = example;
 
 class Guard {
     constructor(id) {
@@ -43,7 +45,7 @@ var events = [];
 for (const line of input.split('\n')) {
     var time = new Date(line.split(']')[0].replace('[', '').replace(' ', 'T') + ":00.000Z");
     var action = line.split(']')[1].trim();
-    events.push(new Event(time, line.split(']')[0].replace('[',''), action));
+    events.push(new Event(time, line.split(']')[0].replace('[',''), action.trim()));
 }
 
 // sort events by time
@@ -53,20 +55,20 @@ var guards = new Map();
 var guard = null;
 var start = null;
 for (const event of events) {
-    console.log(event.timeString, event.action);
-    if (action.startsWith('Guard')) {
-        var id = action.split(' ')[1].replace('#', '');
+    // console.log(event.timeString, event.action);
+    if (event.action.startsWith('Guard')) {
+        var id = event.action.split(' ')[1].replace('#', '');
         if (!guards.has(id)) {
             guards.set(id, new Guard(id));
         }
         guard = guards.get(id);
-    } else if (action.startsWith('falls') && guard != null) {
-        start = time;
+    } else if (event.action.startsWith('falls') && guard != null) {
+        start = parseInt(event.timeString.split(':')[1].trim());
         // console.log("start:", start);
-    } else if (action.startsWith('wakes') && guard != null && start != null) {
-        var end = time;
+    } else if (event.action.startsWith('wakes') && guard != null && start != null) {
+        var end = parseInt(event.timeString.split(':')[1].trim());
         var sleep = end - start;
-        console.log(guard.id, start, end, sleep);
+        // console.log(guard.id, start, end, sleep);
         guard.sleep += sleep;
         for (var j = start; j < end; j++) {
             guard.minutes[j % 60]++;
@@ -76,9 +78,12 @@ for (const event of events) {
 
 }
 
-console.log(guards);
-
 var guard = Array.from(guards.values()).sort((a, b) => b.sleep - a.sleep)[0];
-console.log(guard.minutes);
+console.log(guard);
 var minute = guard.minutes.indexOf(Math.max(...guard.minutes));
 console.log(guard.id * minute, guard.id, minute);
+
+part1 = guard.id * minute;
+test('part1', () => {
+    assert.strictEqual(part1, 151754);
+});
