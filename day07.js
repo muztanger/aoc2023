@@ -97,7 +97,7 @@ for (var line of input.split('\n')) {
 hands.sort((a, b) => a.compare(b));
 
 var part1 = hands.map((hand, i) => {
-    console.log(hand.hand, ':', (i + 1), '*', hand.bid);
+    // console.log(hand.hand, ':', (i + 1), '*', hand.bid);
     return (i + 1) * hand.bid;
 }).reduce((a, b) => a + b, 0);
 
