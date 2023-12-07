@@ -14,8 +14,8 @@ process.argv.forEach((val, index) => {
 console.log(`year: ${year} day:${day}`);
 
 const paddedDay = day.toString().padStart(2, '0');
-const inputFilePath =  year == 2023 ? `${paddedDay}.in` : `${year}/day${paddedDay}.in`;
-const dayFilePath = day == 2023 ? `${paddedDay}.js` : `${year}/day${paddedDay}.js`;
+const inputFilePath =  year == 2023 ? `day${paddedDay}.in` : `${year}/day${paddedDay}.in`;
+const dayFilePath = year == 2023 ? `day${paddedDay}.js` : `${year}/day${paddedDay}.js`;
 
 async function writeInputToFile(filePath) {
     const input = await ut.fetchInput(day, year);
