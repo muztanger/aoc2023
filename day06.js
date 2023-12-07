@@ -23,3 +23,46 @@ for (var race = 0; race < N ; race++) {
     part1 *= count;
 }
 console.log(part1);
+
+const bigTime = parseInt(lines[0].split(':')[1].replace(/\s+/g, ''));
+const bigDistance = parseInt(lines[1].split(':')[1].replace(/\s+/g, ''));
+// const bigTime = 71530;
+// const bigDistance = 940200;
+console.log(bigTime, bigDistance);
+
+var a = 1;
+var b = bigTime;
+var i = 0;
+while (a != b && i++ < 10000) {
+    if (a * (bigTime - a) < bigDistance) {
+        var c = Math.floor((a + b) / 2);
+        if (c * (bigTime - c) < bigDistance) {
+            a = c + 1;
+        } else {
+            b = c;
+        }
+    }
+}
+
+var lower = a;
+
+b = bigTime;
+i = 0;
+while (a != b && i++ < 10000) {
+    if (b * (bigTime - b) < bigDistance) {
+        var c = Math.floor((a + b) / 2);
+        if (c * (bigTime - c) > bigDistance) {
+            a = c + 1;
+        } else {
+            b = c;
+        }
+    }
+}
+
+var upper = b - 1;
+
+console.log(lower, lower * (bigTime - lower) - bigDistance);
+console.log(upper, upper * (bigTime - upper) - bigDistance);
+
+var part2 = upper - lower + 1;
+console.log(part2);
