@@ -24,26 +24,26 @@ for (line of input.split('\n')) {
     const values = line.split(/\s+/).map(x => parseInt(x));
     // console.log(values);
 
-    var diffs = [values];
-    while (diffs.length == 0 || diffs[diffs.length - 1].some(x => x != 0)) {
-        var curr = diffs[diffs.length - 1];
-        var diffline = [];
-        for (var i = 1; i < curr.length; i++) {
-            diffline.push(curr[i] - curr[i - 1]);
+    var dxs = [values];
+    while (dxs.length == 0 || dxs[dxs.length - 1].some(x => x != 0)) {
+        var xs = dxs[dxs.length - 1];
+        var nextDx = [];
+        for (var i = 1; i < xs.length; i++) {
+            nextDx.push(xs[i] - xs[i - 1]);
         }
-        diffs.push(diffline);
+        dxs.push(nextDx);
     }
-    console.log(diffs);
-    var next = diffs.reduce((acc, xs) => acc + xs[xs.length - 1], 0);
+    // console.log(dxs);
+    var next = dxs.reduce((acc, xs) => acc + xs[xs.length - 1], 0);
     var ys = [0];
-    for (var i = diffs.length - 2; i >= 0; i--) {
-        ys.push(diffs[i][0] - ys[ys.length - 1]);
+    for (var i = dxs.length - 2; i >= 0; i--) {
+        ys.push(dxs[i][0] - ys[ys.length - 1]);
     }
-    console.log(ys);
+    // console.log(ys);
     part2 += ys[ys.length - 1];
 
     part1 += next;
-    console.log(next, part1);
+    // console.log(next, part1);
 }
 
 console.log(part1); // 2038472161
