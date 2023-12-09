@@ -21,7 +21,18 @@ AAA = (BBB, BBB)
 BBB = (AAA, ZZZ)
 ZZZ = (ZZZ, ZZZ)`;
 
-// input = example2;
+const example3 = `LR
+
+11A = (11B, XXX)
+11B = (XXX, 11Z)
+11Z = (11B, XXX)
+22A = (22B, XXX)
+22B = (22C, 22C)
+22C = (22Z, 22Z)
+22Z = (22B, 22B)
+XXX = (XXX, XXX)`;
+
+// input = example3;
 
 const instructions = input.split('\n\n')[0].trim();
 
@@ -53,24 +64,82 @@ for (var key in nodes) {
     node.right = nodes[node.right];
 }
 
-const start = nodes['AAA']
-var current = start;
-var part1 = 0;
-var isFound = false;
-while (!isFound) {
-    for (const instruction of instructions.split('')) {
-        part1++;
-        // console.log(instruction, current.name, part1);
+// const start = nodes['AAA']
+// var current = start;
+// var part1 = 0;
+// var isTotalEnd = false;
+// while (!isTotalEnd) {
+//     for (const instruction of instructions.split('')) {
+//         part1++;
+//         // console.log(instruction, current.name, part1);
+//         if (instruction === 'L') {
+//             current = current.left;
+//         } else {
+//             current = current.right;
+//         }
+//         if (current.name === 'ZZZ') {
+//             isTotalEnd = true;
+//             break;
+//         }
+//     }
+// }
+// console.log(part1);
+
+class Ghost {
+    constructor(start) {
+        this.current = start;
+        this.init = -1;
+        this.loop = -1;
+    }
+
+    move(instruction) {
         if (instruction === 'L') {
-            current = current.left;
+            this.current = this.current.left;
         } else {
-            current = current.right;
-        }
-        if (current.name === 'ZZZ') {
-            isFound = true;
-            break;
+            this.current = this.current.right;
         }
     }
-}
-console.log(part1);
 
+    isEnd() {
+        return this.current.name[2] === 'Z';
+    }
+}
+
+const ghosts = [];
+for (var key in nodes) {
+    const node = nodes[key];
+    if (node.name[2] === 'A') {
+        ghosts.push(new Ghost(node));
+    }
+}
+
+for (const ghost of ghosts) {
+    var loopFound = false;
+    var index = 0;
+    while (!loopFound) {
+        ghost.move(instructions[index]);
+        ghost.init++;
+        if (ghost.current.name[2] === 'A') {
+            loopFound = true;
+        }
+        
+        index = (index + 1) % instructions.length;
+    }
+}
+
+var part2 = 0;
+var isTotalEnd = false;
+while (!isTotalEnd) {
+    part2++;
+    var endCount = 0;
+    for (const ghost of ghosts) {
+        ghost.move(instructions[(part2 - 1) % instructions.length]);
+        if (ghost.isEnd()) {
+            endCount++;
+        }
+    }
+    if (endCount === ghosts.length) {
+        isTotalEnd = true;
+    }
+}
+console.log(part2);
