@@ -41,9 +41,15 @@ class Tile {
                 return [new Pos(-1, 0), new Pos(0, 1)].map(x => this.pos.add(x));
             case "F":
                 return [new Pos(1, 0), new Pos(0, 1)].map(x => this.pos.add(x));
+            case "S":
+                return [new Pos(1, 0), new Pos(0, 1), new Pos(-1, 0), new Pos(0, -1)].map(x => this.pos.add(x));
             default:
                 return [];
         }
+    }
+
+    isConnected(other) {
+        return this.connections().some(p => p.x == other.pos.x && p.y == other.pos.y && other.connections().some(q => q.x == this.pos.x && q.y == this.pos.y));
     }
 
     static isPipe(c) {
@@ -80,16 +86,24 @@ for (var y = 0; y < lines.length; y++) {
         }
     }
 }
-// for (var y = 0; y < 10; y++) {
-//     var line = "";
-//     for (var x = 0; x < 10; x++) {
-//         const pos = new Pos(x, y);
-//         if (tiles[pos.asKey()] === undefined) {
-//             line += ".";
-//         }
-//         else {
-//             line += tiles[pos.asKey()].dir;
-//         }
-//     }
-//     console.log(line);
-// }
+
+// Find loop length
+const visited = new Set();
+const queue = [start];
+var loop = -1;
+while (queue.length > 0) {
+    const current = queue.shift();
+    if (visited.has(current.pos.asKey())) {
+        break;
+    }
+    visited.add(current.pos.asKey());
+    for (const pos of current.connections().filter(p => !visited.has(p.asKey()) && tiles[p.asKey()])) {
+        if (current.isConnected(tiles[pos.asKey()])) {
+            queue.push(tiles[pos.asKey()]);
+        }
+    }
+    loop++;
+}
+
+part1 = visited.size / 2;
+console.log(part1);
