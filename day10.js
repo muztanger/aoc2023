@@ -88,16 +88,16 @@ for (var y = 0; y < lines.length; y++) {
 }
 
 // Find loop length
-const visited = new Set();
+const loopTiles = new Set();
 const queue = [start];
 var loop = -1;
 while (queue.length > 0) {
     const current = queue.shift();
-    if (visited.has(current.pos.asKey())) {
+    if (loopTiles.has(current.pos.asKey())) {
         break;
     }
-    visited.add(current.pos.asKey());
-    for (const pos of current.connections().filter(p => !visited.has(p.asKey()) && tiles[p.asKey()])) {
+    loopTiles.add(current.pos.asKey());
+    for (const pos of current.connections().filter(p => !loopTiles.has(p.asKey()) && tiles[p.asKey()])) {
         if (current.isConnected(tiles[pos.asKey()])) {
             queue.push(tiles[pos.asKey()]);
         }
@@ -105,5 +105,10 @@ while (queue.length > 0) {
     loop++;
 }
 
-part1 = visited.size / 2;
+part1 = loopTiles.size / 2;
 console.log(part1);
+
+// test part1
+test('part1', () => {
+    assert.equal(part1, 7097);
+});
