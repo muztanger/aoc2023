@@ -87,7 +87,14 @@ for (var key in nodes) {
 
 class Ghost {
     constructor(start) {
+        this.start = start;
         this.current = start;
+        this.init = -1;
+        this.loop = -1;
+    }
+
+    reset() {
+        this.current = this.start;
         this.init = -1;
         this.loop = -1;
     }
@@ -100,11 +107,20 @@ class Ghost {
         }
     }
 
+    peek(instruction) {
+        if (instruction === 'L') {
+            return this.current.left;
+        } else {
+            return this.current.right;
+        }
+    }
+
     isEnd() {
         return this.current.name[2] === 'Z';
     }
 }
 
+// find all ghosts
 const ghosts = [];
 for (var key in nodes) {
     const node = nodes[key];
@@ -113,19 +129,48 @@ for (var key in nodes) {
     }
 }
 
+//                                       v
+// g1: ------S------L------L------L------L------
+// g2: --S---L---L---L---L---L---L---L---L---L---L---
+
+// count ends per ghost
 for (const ghost of ghosts) {
-    var loopFound = false;
+    var endCount = 0;
+    var isEnd = false;
     var index = 0;
-    while (!loopFound) {
+    var visited = new Set();
+    while (!visited.has(ghost.current)) {
+        visited.add(ghost.current);
         ghost.move(instructions[index]);
-        ghost.init++;
-        if (ghost.current.name[2] === 'A') {
-            loopFound = true;
+        if (ghost.isEnd()) {
+            endCount++;
         }
-        
         index = (index + 1) % instructions.length;
     }
+    console.log(ghost.current.name, endCount);
 }
+return;
+// reset ghosts
+ghosts.forEach(g => g.reset());
+
+// Find all loops
+// for (const ghost of ghosts) {
+//     var loopFound = false;
+//     var index = 0;
+//     var visited = new Set();
+//     visited.add(ghost.current);
+//     while (!loopFound) {
+//         if (visited.has(ghost.peek(instructions[index]))) {
+//             loopFound = true;
+//         }
+//         ghost.move(instructions[index]);
+//         visited.add(ghost.current);
+
+//         ghost.init++;
+        
+//         index = (index + 1) % instructions.length;
+//     }
+// }
 
 var part2 = 0;
 var isTotalEnd = false;
