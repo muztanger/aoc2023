@@ -82,31 +82,40 @@ for (let i = 0; i < galaxies.length; i++) {
 }
 console.log('Part 1:', part1);
 
+class Galaxy {
+    constructor(pos) {
+        this.pOrig = new Pos(pos.x, pos.y);
+        this.pExpanded = new Pos(pos.x, pos.y);
+    }
+}
+
 galaxies = []; // reset
 for (let y = 0; y < grid.length; y++) {
     for (let x = 0; x < grid[y].length; x++) {
         if (grid[y][x] == '#') {
-            galaxies.push(new Pos(x, y));
+            galaxies.push(new Galaxy(new Pos(x, y)));
         }
     }
 }
 
+expandedRowIndexes.sort((a, b) => b - a);
 galaxies.sort((a, b) => a.y - b.y); // sort by y
-for (let index of expandedRowIndexes) {
-    for (let j = 0; j < galaxies.length; j++) {
-        if (galaxies[j].y >= index) {
-            galaxies[j].y += 1000000;
+for (const index of expandedRowIndexes) {
+    for (let i = 0; i < galaxies.length; i++) {
+        if (galaxies[i].pOrig.y >= index) {
+            galaxies[i].pExpanded.y += 999999;
         }
     }
 }
-galaxies.sort((a, b) => b.y - a.y);
-console.log(galaxies);
+galaxies.sort((a, b) => b.pExpanded.y - a.pExpanded.y);
+// console.log(galaxies[0], galaxies[1]);
+// return;
 
 galaxies.sort((a, b) => a.x - b.x);
 for (let index of expandedColIndexes) {
     for (let j = 0; j < galaxies.length; j++) {
-        if (galaxies[j].x >= index) {
-            galaxies[j].x += 1000000;
+        if (galaxies[j].pOrig.x >= index) {
+            galaxies[j].pExpanded.x += 999999;
         }
     }
 }
@@ -114,12 +123,13 @@ for (let index of expandedColIndexes) {
 let part2 = 0;
 for (let i = 0; i < galaxies.length; i++) {
     for (let j = i + 1; j < galaxies.length; j++) {
-        let dx = Math.abs(galaxies[i].x - galaxies[j].x);
-        let dy = Math.abs(galaxies[i].y - galaxies[j].y);
+        let dx = Math.abs(galaxies[i].pExpanded.x - galaxies[j].pExpanded.x);
+        let dy = Math.abs(galaxies[i].pExpanded.y - galaxies[j].pExpanded.y);
         part2 += dx + dy;
     }
 }
 
 // 640489502522 too low
 // 640488862042 too low
+// 790195502522 too high
 console.log('Part 2:', part2);
