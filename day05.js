@@ -53,7 +53,7 @@ class Range {
     }
 
     overlaps(other) {
-        return this.start < other.start + other.range && other.start < this.start + this.range;
+        return this.intersection(other) != null;
     }
 
     intersection(other) {
