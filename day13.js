@@ -4,7 +4,23 @@ const path = require('node:path');
 const test = require('node:test');
 const ut = require('./utilities.js');
 
-const input = fs.readFileSync(path.basename(__filename).replace(/\.js$/, '.in'), { encoding: 'utf8' });
+let input = fs.readFileSync(path.basename(__filename).replace(/\.js$/, '.in'), { encoding: 'utf8' });
+const example = `#.##..##.
+..#.##.#.
+##......#
+##......#
+..#.##.#.
+..##..##.
+#.#.##.#.
+
+#...##..#
+#....#..#
+..##..###
+#####.##.
+#####.##.
+..##..###
+#....#..#`;
+// input = example;
 
 let grids = input.split('\n\n').map(grid => grid.split('\n').map(line => line.split('')));
 
@@ -61,7 +77,7 @@ for (const grid of grids) {
             c2++;
         }
         // console.log(i, reflectCount);
-        if (i - reflectCount === 0 || i + reflectCount === grid.length) {
+        if (i - reflectCount === 0 || i + reflectCount === grid[0].length) {
             vReflection = i;
             break;
         }
