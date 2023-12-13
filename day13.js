@@ -82,7 +82,7 @@ for (const grid of grids) {
             break;
         }
     }
-    console.log("hReflection", hReflection, "vRflection", vReflection);
+    // console.log("hReflection", hReflection, "vRflection", vReflection);
     if (hReflection > 0) {
         part1 += 100 * hReflection;
     }
@@ -90,5 +90,8 @@ for (const grid of grids) {
         part1 += vReflection;
     }
 }
-// 27030 not correct
+
 console.log("Part 1:", part1);
+test('Part 1', () => {
+    assert.strictEqual(part1, 26957);
+});
