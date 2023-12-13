@@ -131,9 +131,9 @@ for (let index = 0; index < grids.length; index++) {
             let smudged = smudge(grid, i, j);
             var hReflection = checkHorizontalReflection(smudged);
             var vReflection = checkVerticalReflection(smudged);
-            // if (!found.some(xs => xs[0] === hReflection && xs[1] === vReflection)) {
+            if (!found.some(xs => xs[0] === hReflection && xs[1] === vReflection)) {
                 found.push([hReflection, vReflection])
-            // }
+            }
         }
     }
     for (let i = 0; i < found.length; i++) {
