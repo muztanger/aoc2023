@@ -131,10 +131,16 @@ for (let index = 0; index < grids.length; index++) {
             let smudged = smudge(grid, i, j);
             var hReflection = checkHorizontalReflection(smudged);
             var vReflection = checkVerticalReflection(smudged);
-            if (!found.some(xs => xs[0] === hReflection && xs[1] === vReflection)) {
+            if (!found.some(xs => xs[0] === hReflection && xs[1] === vReflection) && (hReflection > 0 || vReflection > 0)) {
+                
                 found.push([hReflection, vReflection])
             }
         }
+    }
+    console.log(index, orig, found);
+    if (found.length === 0) {
+        console.log("No reflections found for", index);
+        found.push(orig);
     }
     for (let i = 0; i < found.length; i++) {
         let hReflection = found[i][0];
