@@ -50,6 +50,7 @@ class Range {
     constructor(start, range) {
         this.start = start;
         this.range = range;
+        this.end = start + range - 1;
     }
 
     overlaps(other) {
@@ -58,22 +59,28 @@ class Range {
 
     intersection(other) {
         var start = Math.max(this.start, other.start);
-        var end = Math.min(this.start + this.range, other.start + other.range);
+        var end = Math.min(this.this.end, other.end);
         if (start < end) {
-            return new Range(start, end - start);
+            return new Range(start, end - start + 1);
         }
         return null;
     }
 
     remainders(other) {
         var start = Math.max(this.start, other.start);
-        var end = Math.min(this.start + this.range, other.start + other.range);
+        var end = Math.min(this.end, other.end);
         var result = [];
-        if (start > this.start) {
-            result.push(new Range(this.start, start - this.start));
+        // --****------
+        // ----****----
+        // 
+        // --**--**----
+        if (this.start != start) {
+            let minStart = Math.min(this.start, other.start);
+            result.push(new Range(minStart, start - minStart + 1));
         }
-        if (end < this.start + this.range) {
-            result.push(new Range(end, this.start + this.range - end));
+        if (this.end != other.end) {
+            let maxEnd = Math.max(this.end, other.end);
+            result.push(new Range(end, maxEnd - end + 1));
         }
         return result;
     }
