@@ -44,7 +44,7 @@ humidity-to-location map:
 var split = input.split('\n\n');
 var items = split[0].trim().split(' ').slice(1).map(x => parseInt(x));
 
-var itemType = "seed";
+let category = "seed";
 
 class Range {
     constructor(start, range) {
@@ -59,7 +59,7 @@ class Range {
 
     intersection(other) {
         var start = Math.max(this.start, other.start);
-        var end = Math.min(this.this.end, other.end);
+        var end = Math.min(this.end, other.end);
         if (start < end) {
             return new Range(start, end - start + 1);
         }
@@ -118,27 +118,22 @@ class GrowMap {
         return x;
     }
 
-    transformRange(x, xRange) {
-        var result = [];
-        if (xRange <= 0) return result;
+    /**
+     * 
+     * @param {Range} range 
+     * @returns {Range[]}
+     */
+    transformRange(range) {
+        let result = [];
+        if (range.start <= 0) return result;
 
-        var stack = [[x, xRange]];
-        while (stack.length > 0) {
-            var [y, yRange] = stack.pop();
-            for (var transform of this.transforms) {
-                var yStart = Math.max(y, transform.source);
-                var yEnd = Math.min(y + yRange, transform.source + transform.range);
-                if (yStart >= yEnd) continue;
-
-                var intersections = transform.transformRange(y, yRange);
-                if (intersections.length == 1) {
-                    result.push(intersections[0]);
-                } else {
-                    intersections.forEach(x => stack.push(x));
-                }
-                break;
-            }
+        for (let transform of this.transforms) {
+            if (!transform.overlapsSourceRange(range)) continue;
+            let newRanges = transform.transformRange(range);
+            newRanges.forEach(x => result.push(x));
+            break;
         }
+     
         return result;
     }
 
@@ -155,6 +150,10 @@ class Transform {
         this.sourceRange = new Range(source, range);
     }
 
+    overlapsSourceRange(range) {
+        return this.sourceRange.overlaps(range);
+    }
+
     transform(x) {
         if (x >= this.source && x < this.source + this.range) {
             return this.destination + (x - this.source);
@@ -162,23 +161,19 @@ class Transform {
         return x;
     }
 
+    /**
+     * 
+     * @param {Range} other 
+     * @returns {Range[]}
+     */
     transformRange(other) {
-        result = [];     
+        let result = [];
         if (this.sourceRange.overlaps(other)) {
-            result.push(this.sourceRange.intersection(ohter));
-            result.concat(this.sourceRange.remainders(other));
-        }
-        var xStart = Math.max(x, this.source);
-        var xEnd = Math.min(x + xRange, this.source + this.range);
-        var xRange = xEnd - xStart;
-        if (xRange > 0) {
-            result.push([this.destination + (xStart - this.source), xRange]);
-        }
-        if (xStart < x) {
-            result.push(new Range(x, xStart - x));
-        }
-        if (xEnd < x + xRange) {
-            result.push([xEnd, x + xRange - xEnd]);
+            let arr = this.sourceRange.intersection(other).map(x => this.transform(x));
+            result.push(arr);
+            result.push(this.sourceRange.remainders(other));
+        } else {
+            result.push(other);
         }
         return result;
     }
@@ -195,37 +190,40 @@ for (var mapData of split.slice(1)) {
 }
 
 isUpdate = true;
-// console.log(items);
 while (isUpdate) {
     isUpdate = false;
-    map = maps.find(x => x.source == itemType);
+    map = maps.find(x => x.source == category);
     if (map) {
-        // console.log(map);
-        var str = items.join(' ') + ' -> ';
         items = items.map(x => map.transform(x));
-        // console.log(str + items.join(' '));
-        itemType = map.destination;
+        category = map.destination;
         isUpdate = true;
     }
 }
 var part1 = Math.min(...items);
 console.log(part1);
 
+test('Part 1', () => {
+    assert.equal(part1, 174137457);
+});
+
 // Part 2
 items = split[0].trim().split(' ').slice(1).map(x => parseInt(x));
+var ranges = [];
+for (var i = 0; i < items.length; i += 2) {
+    ranges.push(new Range(items[i], items[i + 1]));
+}
 
-while (isUpdate) {
-    isUpdate = false;
-    map = maps.find(x => x.source == itemType);
+console.log(ranges);
+
+category = "seed";
+for(;;) {
+    map = maps.find(x => x.source == category);
     if (map) {
-        // console.log(map);
-        var str = items.join(' ') + ' -> ';
-        for (var i = 0; i < items.length; i += 2) {
-
-        }
-        items = items.map(x => map.transform(x));
-        // console.log(str + items.join(' '));
-        itemType = map.destination;
-        isUpdate = true;
+        ranges = ranges.map(range => map.transformRange(range));
+        category = map.destination;
+    } else {
+        break;
     }
 }
+
+console.log(ranges);
