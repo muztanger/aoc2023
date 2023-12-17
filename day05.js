@@ -39,7 +39,7 @@ temperature-to-humidity map:
 humidity-to-location map:
 60 56 37
 56 93 4`;
-let useExample = true;
+let useExample = false;
 if (useExample) {
     input = example;
 }
@@ -171,14 +171,13 @@ class GrowMap {
      */
     transformRange(range) {
         let result = [];
-        //if (range.start <= 0) return result;
 
         let isFound = false;
         for (let transform of this.transforms) {
             if (!transform.overlapsSourceRange(range)) continue;
             let newRanges = transform.transformRange(range);
             // console.log("newRanges:\n   ", newRanges);
-            newRanges.forEach(x => result.push(x));
+            newRanges.forEach(x => result.push(x)); //TODO: remainders should be kept for future transforms.  This is a bug.
             isFound = true;
             break;
         }
@@ -225,7 +224,7 @@ class Transform {
             let intersection = this.sourceRange.intersection(other);
             // console.log("intersection:\n", intersection)
             result.push(new Range(this.transform(intersection.start), intersection.range));
-            this.sourceRange.remainders(other).forEach(r => result.push(r));
+            this.sourceRange.remainders(other).forEach(r => result.push(r)); //TODO: These remainders should be kept in the outer loop
         } else {
             result.push(other);
         }
@@ -244,15 +243,10 @@ for (var mapData of split.slice(1)) {
     maps.push(map);
 }
 
-isUpdate = true;
-while (isUpdate) {
-    isUpdate = false;
-    map = maps.find(x => x.source == category);
-    if (map) {
-        items = items.map(x => map.transform(x));
-        category = map.destination;
-        isUpdate = true;
-    }
+while (map = maps.find(x => x.source == category)) {
+    items = items.map(x => map.transform(x));
+    category = map.destination;
+    isUpdate = true;
 }
 var part1 = Math.min(...items);
 console.log(part1);
@@ -277,15 +271,10 @@ for (var i = 0; i < items.length; i += 2) {
 category = "seed";
 // let index = 0;
 // console.log("index: ", index++, "ranges: ", ranges);
-for(;;) {
-    map = maps.find(x => x.source == category);
-    if (map) {
-        ranges = ranges.map(range => map.transformRange(range)).flat();
-        // console.log("index: ", index++, "ranges: ", ranges);
-        category = map.destination;
-    } else {
-        break;
-    }
+while (map = maps.find(x => x.source == category)) {
+    ranges = ranges.map(range => map.transformRange(range)).flat();
+    // console.log("index: ", index++, "ranges: ", ranges);
+    category = map.destination;
 }
 
 var part2 = Math.min(...ranges.map(x => x.start));
