@@ -39,7 +39,10 @@ temperature-to-humidity map:
 humidity-to-location map:
 60 56 37
 56 93 4`;
-// input = example;
+let useExample = true;
+if (useExample) {
+    input = example;
+}
 
 var split = input.split('\n\n');
 var items = split[0].trim().split(' ').slice(1).map(x => parseInt(x));
@@ -67,24 +70,67 @@ class Range {
     }
 
     remainders(other) {
-        var start = Math.max(this.start, other.start);
-        var end = Math.min(this.end, other.end);
         var result = [];
-        // --****------
-        // ----****----
+        // other --****---
+        // this  ---**----
         // 
-        // --**--**----
-        if (this.start != start) {
-            let minStart = Math.min(this.start, other.start);
-            result.push(new Range(minStart, start - minStart + 1));
+        //       --*--*----
+        var intersection = this.intersection(other);
+        // console.log("remainders:\n   ", this, "\nother:\n   ", other, "\nintersection:\n   ", intersection);
+        if (other.start < intersection.start) {
+            result.push(new Range(other.start, intersection.start - other.start));
         }
-        if (this.end != other.end) {
-            let maxEnd = Math.max(this.end, other.end);
-            result.push(new Range(end, maxEnd - end + 1));
+        if (other.end > intersection.end) {
+            result.push(new Range(intersection.end + 1, other.end - intersection.end));
         }
+        // console.log("result:\n   ", result);
         return result;
     }
+
+    toString() {
+        return `[${this.start}, ${this.end}]`;
+    }
 }
+
+// test('Range', () => {
+//     /// check overlaps
+//     assert.ok(new Range(0, 10).overlaps(new Range(5, 10)));
+//     assert.ok(new Range(5, 10).overlaps(new Range(0, 10)));
+//     assert.ok(new Range(0, 10).overlaps(new Range(0, 10)));
+//     assert.ok(new Range(0, 10).overlaps(new Range(0, 5)));
+//     assert.ok(new Range(0, 10).overlaps(new Range(5, 5)));
+
+//     // check non-overlaps
+//     assert.ok(!new Range(0, 10).overlaps(new Range(10, 10)));
+//     assert.ok(!new Range(0, 10).overlaps(new Range(11, 10)));
+//     assert.ok(!new Range(0, 10).overlaps(new Range(20, 10)));
+//     assert.ok(!new Range(0, 10).overlaps(new Range(-10, 10)));
+
+//     // check intersection start
+//     assert.equal(new Range(0, 10).intersection(new Range(5, 10)).start, 5);
+//     assert.equal(new Range(5, 10).intersection(new Range(0, 10)).start, 5);
+//     assert.equal(new Range(0, 10).intersection(new Range(0, 10)).start, 0);
+//     assert.equal(new Range(0, 10).intersection(new Range(0, 5)).start, 0);
+
+//     // check intersection end
+//     assert.equal(new Range(0, 10).intersection(new Range(5, 10)).end, 9);
+//     assert.equal(new Range(5, 10).intersection(new Range(0, 10)).end, 9);
+//     assert.equal(new Range(0, 10).intersection(new Range(0, 10)).end, 9);
+//     assert.equal(new Range(0, 10).intersection(new Range(0, 5)).end, 4);
+
+//     // check intersection range
+//     assert.equal(new Range(0, 10).intersection(new Range(5, 10)).range, 5);
+//     assert.equal(new Range(5, 10).intersection(new Range(0, 10)).range, 5);
+//     assert.equal(new Range(0, 10).intersection(new Range(0, 10)).range, 10);
+//     assert.equal(new Range(0, 10).intersection(new Range(0, 5)).range, 5);
+
+//     // check remainders
+//     assert.deepStrictEqual(new Range(0, 10).remainders(new Range(5, 10)), [new Range(10, 5)]);
+//     assert.deepStrictEqual(new Range(5, 10).remainders(new Range(0, 10)), [new Range(0, 5)]);
+//     assert.strictEqual(new Range(0, 10).remainders(new Range(0, 10)).length, 0);
+//     assert.strictEqual(new Range(0, 10).remainders(new Range(0, 5)).length, 0);
+
+// });
 
 class GrowMap {
     constructor() {
@@ -125,13 +171,20 @@ class GrowMap {
      */
     transformRange(range) {
         let result = [];
-        if (range.start <= 0) return result;
+        //if (range.start <= 0) return result;
 
+        let isFound = false;
         for (let transform of this.transforms) {
             if (!transform.overlapsSourceRange(range)) continue;
             let newRanges = transform.transformRange(range);
+            console.log("newRanges:\n   ", newRanges);
             newRanges.forEach(x => result.push(x));
+            isFound = true;
             break;
+        }
+
+        if (!isFound) {
+            result.push(range);
         }
      
         return result;
@@ -169,12 +222,14 @@ class Transform {
     transformRange(other) {
         let result = [];
         if (this.sourceRange.overlaps(other)) {
-            let arr = this.sourceRange.intersection(other).map(x => this.transform(x));
-            result.push(arr);
-            result.push(this.sourceRange.remainders(other));
+            let intersection = this.sourceRange.intersection(other);
+            // console.log("intersection:\n", intersection)
+            result.push(new Range(this.transform(intersection.start), intersection.range));
+            this.sourceRange.remainders(other).forEach(r => result.push(r));
         } else {
             result.push(other);
         }
+        console.log("transformRange:\n", this, "\nother:\n", other, "\nresult:\n", result);
         return result;
     }
 
@@ -203,7 +258,11 @@ var part1 = Math.min(...items);
 console.log(part1);
 
 test('Part 1', () => {
-    assert.equal(part1, 174137457);
+    if (useExample) {
+        assert.equal(part1, 35);
+    } else {
+        assert.equal(part1, 174137457);
+    }
 });
 
 // Part 2
@@ -213,17 +272,31 @@ for (var i = 0; i < items.length; i += 2) {
     ranges.push(new Range(items[i], items[i + 1]));
 }
 
-console.log(ranges);
+// console.log(ranges);
 
 category = "seed";
+// let index = 0;
+// console.log("index: ", index++, "ranges: ", ranges);
 for(;;) {
     map = maps.find(x => x.source == category);
     if (map) {
-        ranges = ranges.map(range => map.transformRange(range));
+        ranges = ranges.map(range => map.transformRange(range)).flat();
+        // console.log("index: ", index++, "ranges: ", ranges);
         category = map.destination;
     } else {
         break;
     }
 }
 
-console.log(ranges);
+var part2 = Math.min(...ranges.map(x => x.start));
+console.log(part2);
+
+test('Part 2', () => {
+    if (useExample) {
+        assert.equal(part2, 46);
+    } else {
+        // 4249618 is too high
+        assert.notStrictEqual(part2, 4249618, "too high");
+        assert.equal(part2, 0);
+    }
+});
