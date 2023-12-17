@@ -92,45 +92,45 @@ class Range {
     }
 }
 
-// test('Range', () => {
-//     /// check overlaps
-//     assert.ok(new Range(0, 10).overlaps(new Range(5, 10)));
-//     assert.ok(new Range(5, 10).overlaps(new Range(0, 10)));
-//     assert.ok(new Range(0, 10).overlaps(new Range(0, 10)));
-//     assert.ok(new Range(0, 10).overlaps(new Range(0, 5)));
-//     assert.ok(new Range(0, 10).overlaps(new Range(5, 5)));
+test('Range', () => {
+    /// check overlaps
+    assert.ok(new Range(0, 10).overlaps(new Range(5, 10)));
+    assert.ok(new Range(5, 10).overlaps(new Range(0, 10)));
+    assert.ok(new Range(0, 10).overlaps(new Range(0, 10)));
+    assert.ok(new Range(0, 10).overlaps(new Range(0, 5)));
+    assert.ok(new Range(0, 10).overlaps(new Range(5, 5)));
 
-//     // check non-overlaps
-//     assert.ok(!new Range(0, 10).overlaps(new Range(10, 10)));
-//     assert.ok(!new Range(0, 10).overlaps(new Range(11, 10)));
-//     assert.ok(!new Range(0, 10).overlaps(new Range(20, 10)));
-//     assert.ok(!new Range(0, 10).overlaps(new Range(-10, 10)));
+    // check non-overlaps
+    assert.ok(!new Range(0, 10).overlaps(new Range(10, 10)));
+    assert.ok(!new Range(0, 10).overlaps(new Range(11, 10)));
+    assert.ok(!new Range(0, 10).overlaps(new Range(20, 10)));
+    assert.ok(!new Range(0, 10).overlaps(new Range(-10, 10)));
 
-//     // check intersection start
-//     assert.equal(new Range(0, 10).intersection(new Range(5, 10)).start, 5);
-//     assert.equal(new Range(5, 10).intersection(new Range(0, 10)).start, 5);
-//     assert.equal(new Range(0, 10).intersection(new Range(0, 10)).start, 0);
-//     assert.equal(new Range(0, 10).intersection(new Range(0, 5)).start, 0);
+    // check intersection start
+    assert.equal(new Range(0, 10).intersection(new Range(5, 10)).start, 5);
+    assert.equal(new Range(5, 10).intersection(new Range(0, 10)).start, 5);
+    assert.equal(new Range(0, 10).intersection(new Range(0, 10)).start, 0);
+    assert.equal(new Range(0, 10).intersection(new Range(0, 5)).start, 0);
 
-//     // check intersection end
-//     assert.equal(new Range(0, 10).intersection(new Range(5, 10)).end, 9);
-//     assert.equal(new Range(5, 10).intersection(new Range(0, 10)).end, 9);
-//     assert.equal(new Range(0, 10).intersection(new Range(0, 10)).end, 9);
-//     assert.equal(new Range(0, 10).intersection(new Range(0, 5)).end, 4);
+    // check intersection end
+    assert.equal(new Range(0, 10).intersection(new Range(5, 10)).end, 9);
+    assert.equal(new Range(5, 10).intersection(new Range(0, 10)).end, 9);
+    assert.equal(new Range(0, 10).intersection(new Range(0, 10)).end, 9);
+    assert.equal(new Range(0, 10).intersection(new Range(0, 5)).end, 4);
 
-//     // check intersection range
-//     assert.equal(new Range(0, 10).intersection(new Range(5, 10)).range, 5);
-//     assert.equal(new Range(5, 10).intersection(new Range(0, 10)).range, 5);
-//     assert.equal(new Range(0, 10).intersection(new Range(0, 10)).range, 10);
-//     assert.equal(new Range(0, 10).intersection(new Range(0, 5)).range, 5);
+    // check intersection range
+    assert.equal(new Range(0, 10).intersection(new Range(5, 10)).range, 5);
+    assert.equal(new Range(5, 10).intersection(new Range(0, 10)).range, 5);
+    assert.equal(new Range(0, 10).intersection(new Range(0, 10)).range, 10);
+    assert.equal(new Range(0, 10).intersection(new Range(0, 5)).range, 5);
 
-//     // check remainders
-//     assert.deepStrictEqual(new Range(0, 10).remainders(new Range(5, 10)), [new Range(10, 5)]);
-//     assert.deepStrictEqual(new Range(5, 10).remainders(new Range(0, 10)), [new Range(0, 5)]);
-//     assert.strictEqual(new Range(0, 10).remainders(new Range(0, 10)).length, 0);
-//     assert.strictEqual(new Range(0, 10).remainders(new Range(0, 5)).length, 0);
+    // check remainders
+    assert.deepStrictEqual(new Range(0, 10).remainders(new Range(5, 10)), [new Range(10, 5)]);
+    assert.deepStrictEqual(new Range(5, 10).remainders(new Range(0, 10)), [new Range(0, 5)]);
+    assert.strictEqual(new Range(0, 10).remainders(new Range(0, 10)).length, 0);
+    assert.strictEqual(new Range(0, 10).remainders(new Range(0, 5)).length, 0);
 
-// });
+});
 
 class GrowMap {
     constructor() {
@@ -177,7 +177,7 @@ class GrowMap {
         for (let transform of this.transforms) {
             if (!transform.overlapsSourceRange(range)) continue;
             let newRanges = transform.transformRange(range);
-            console.log("newRanges:\n   ", newRanges);
+            // console.log("newRanges:\n   ", newRanges);
             newRanges.forEach(x => result.push(x));
             isFound = true;
             break;
