@@ -172,18 +172,21 @@ class GrowMap {
     transformRange(range) {
         let result = [];
 
-        let isFound = false;
-        for (let transform of this.transforms) {
-            if (!transform.overlapsSourceRange(range)) continue;
-            let newRanges = transform.transformRange(range);
-            // console.log("newRanges:\n   ", newRanges);
-            newRanges.forEach(x => result.push(x)); //TODO: remainders should be kept for future transforms.  This is a bug.
-            isFound = true;
-            break;
-        }
-
-        if (!isFound) {
-            result.push(range);
+        var stack = [range];
+        while (stack.length > 0) {
+            let range = stack.pop();
+            let isFound = false;
+            for (let transform of this.transforms) {
+                if (!transform.overlapsSourceRange(range)) continue;
+                let transformResult = transform.transformRange(range);
+                transformResult.transforms.forEach(x => result.push(x));
+                transformResult.remainders.forEach(x => stack.push(x));
+                isFound = true;
+                break;
+            }
+            if (!isFound) {
+                result.push(range);
+            }
         }
      
         return result;
@@ -216,17 +219,16 @@ class Transform {
     /**
      * 
      * @param {Range} other 
-     * @returns {Range[]}
+     * @returns {{transforms:Range[], remainders:Range[]}}
      */
     transformRange(other) {
-        let result = [];
+        let result = {transforms:[], remainders:[]};
         if (this.sourceRange.overlaps(other)) {
             let intersection = this.sourceRange.intersection(other);
-            // console.log("intersection:\n", intersection)
-            result.push(new Range(this.transform(intersection.start), intersection.range));
-            this.sourceRange.remainders(other).forEach(r => result.push(r)); //TODO: These remainders should be kept in the outer loop
+            result.transforms.push(new Range(this.transform(intersection.start), intersection.range));
+            this.sourceRange.remainders(other).forEach(r => result.remainders.push(r));
         } else {
-            result.push(other);
+            result.remainders.push(other);
         }
         console.log("transformRange:\n", this, "\nother:\n", other, "\nresult:\n", result);
         return result;
@@ -272,8 +274,14 @@ category = "seed";
 // let index = 0;
 // console.log("index: ", index++, "ranges: ", ranges);
 while (map = maps.find(x => x.source == category)) {
-    ranges = ranges.map(range => map.transformRange(range)).flat();
-    // console.log("index: ", index++, "ranges: ", ranges);
+    let newRanges = [];
+    while (ranges.length > 0) {
+        let range = ranges.pop();
+
+
+        newRanges.push(...map.transformRange(range));
+    }
+    ranges = newRanges;
     category = map.destination;
 }
 
@@ -286,6 +294,6 @@ test('Part 2', () => {
     } else {
         // 4249618 is too high
         assert.notStrictEqual(part2, 4249618, "too high");
-        assert.equal(part2, 0);
+        assert.equal(part2, 1493866);
     }
 });
