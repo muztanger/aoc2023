@@ -47,36 +47,6 @@ class Line {
         this.end = end;
     }
 
-    // intersects(other) {
-    //     // https://stackoverflow.com/a/1968345/115589
-    //     const p = this.start;
-    //     const q = other.start;
-    //     const r = this.end.sub(this.start); // end = start + r
-    //     const s = other.end.sub(other.start);
-
-    //     const rxs = r.cross(s);
-    //     const qpxr = q.sub(p).cross(r);
-
-    //     if (rxs.equals(Pos.ZERO) && qpxr.equals(Pos.ZERO)) {
-    //         // collinear
-    //         return true;
-    //     } else if (rxs.equals(Pos.ZERO) && !qpxr.equals(Pos.ZERO)) {
-    //         // parallel
-    //         return false;
-    //     }
-        
-    //     if (!qpxr.equals(Pos.ZERO)) { 
-    //         const t = (q.sub(p).cross(s)) / rxs;
-    //         const u = qpxr / rxs;
-    //         if (0 <= t && t <= 1 && 0 <= u && u <= 1) {
-    //             // intersection
-    //             return true;
-    //         }
-    //     }
-    //     // no intersection
-    //     return false;
-    // }
-
     intersects(other) {
         let v1 = this.end.sub(this.start);
         let v2 = other.end.sub(other.start);
@@ -84,17 +54,9 @@ class Line {
       
         let v1CrossV2 = v1.cross(v2);
         let v1CrossV3 = v1.cross(v3);
+        let v2CrossV3 = v2.cross(v3);
 
-        let dotProduct = v1CrossV2.dot(v1CrossV3);
-      
-        if (dotProduct < 0) {
-          return false;
-        }
-      
-        let v2CrossV3 = new THREE.Vector3().crossVectors(v2, v3);
-        dotProduct = v1CrossV2.dot(v2CrossV3);
-      
-        if (dotProduct < 0) {
+        if (v1CrossV2.dot(v1CrossV3) == 0 && v1CrossV2.dot(v2CrossV3) == 0) {
           return false;
         }
       
@@ -112,18 +74,144 @@ class Line {
       
 }
 
+test('line add', () => {
+    const a = new Pos(1, 2, 3);
+    const b = new Pos(4, 5, 6);
+    assert.deepEqual(a.add(b), new Pos(5, 7, 9));
+});
+
+test('line sub', () => {
+    const a = new Pos(1, 2, 3);
+    const b = new Pos(4, 5, 6);
+    assert.deepEqual(a.sub(b), new Pos(-3, -3, -3));
+});
+
+test('line dot', () => {
+    const a = new Pos(1, 2, 3);
+    const b = new Pos(4, 5, 6);
+    assert.equal(a.dot(b), 32);
+});
+
+test('line cross', () => {
+    {
+        const a = new Pos(1, 0, 0);
+        const b = new Pos(0, 1, 0);
+        assert.deepEqual(a.cross(b), new Pos(0, 0, 1));
+    }
+    {
+        const a = new Pos(0, 1, 0);
+        const b = new Pos(0, 0, 1);
+        assert.deepEqual(a.cross(b), new Pos(1, 0, 0));
+    }
+    {
+        const a = new Pos(0, 0, 1);
+        const b = new Pos(1, 0, 0);
+        assert.deepEqual(a.cross(b), new Pos(0, 1, 0));
+    }
+    {
+        const a = new Pos(1, 2, 3);
+        const b = new Pos(4, 5, 6);
+        assert.deepEqual(a.cross(b), new Pos(-3, 6, -3));
+    }
+    {
+        const a = new Pos(1, 0, 0);
+        const b = new Pos(1, 0, 0);
+        assert.deepEqual(a.cross(b), Pos.ZERO);
+    }
+    {
+        const a = new Pos(0, 1, 0);
+        const b = new Pos(0, 1, 0);
+        assert.deepEqual(a.cross(b), Pos.ZERO);
+    }
+    {
+        const a = new Pos(0, 0, 1);
+        const b = new Pos(0, 0, 1);
+        assert.deepEqual(a.cross(b), Pos.ZERO);
+    }
+    {
+        const a = new Pos(1, 2, 3);
+        const b = new Pos(1, 2, 3);
+        assert.deepEqual(a.cross(b), Pos.ZERO);
+    }
+});
+
 test('line intersection', () => {
-    const a = new Line(new Pos(0, 0, 0), new Pos(10, 0, 0));
-    const b = new Line(new Pos(5, 5, 0), new Pos(5, 0, 0));
-    assert.equal(a.intersects(b), true);
-    assert.equal(b.intersects(a), true);
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 1, 0));
+        const b = new Line(new Pos(1, 1, 0), new Pos(1, 0, 0));
+        assert.ok(a.intersects(b));
+    }
+    // TODO check all tests below...
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 1, 0));
+        const b = new Line(new Pos(0, 1, 0), new Pos(1, 1, 0));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 1, 0));
+        const b = new Line(new Pos(0, 1, 0), new Pos(1, 2, 0));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 1, 0));
+        const b = new Line(new Pos(0, 1, 0), new Pos(1, 0, 1));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 1, 0));
+        const b = new Line(new Pos(0, 1, 0), new Pos(1, 0, -1));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 1, 0));
+        const b = new Line(new Pos(0, 1, 0), new Pos(1, 0, 2));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 1, 0));
+        const b = new Line(new Pos(0, 1, 0), new Pos(1, 0, -2));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 1, 0));
+        const b = new Line(new Pos(0, 1, 0), new Pos(1, 0, 3));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 1, 0));
+        const b = new Line(new Pos(0, 1, 0), new Pos(1, 0, -3));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(1, 0, 0));
+        const b = new Line(new Pos(0, 1, 0), new Pos(1, 0, 0));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(0, 1, 0));
+        const b = new Line(new Pos(1, 0, 0), new Pos(1, 1, 0));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(0, 1, 0));
+        const b = new Line(new Pos(1, 0, 0), new Pos(1, 1, 0));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(0, 1, 0));
+        const b = new Line(new Pos(1, 0, 0), new Pos(1, 1, 0));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Line(new Pos(0, 0, 0), new Pos(0, 1, 0));
+        const b = new Line(new Pos(1, 0, 0), new Pos(1, 1, 0));
+        assert.ok(!a.intersects(b));
+    }
 });
 
 class Brick {
     // Each brick is made up of a single straight line of cubes
     constructor(start, end) {
-        this.start = start;
-        this.end = end;
         this.line = new Line(start, end);
     }
 
@@ -139,8 +227,9 @@ class Brick {
 }
 
 const groundZ = 0;
-for (let line of input.split('\n')) {
-    //console.log(line, Brick.parse(line));
+const bricks = input.split('\n').map(Brick.parse);
+for (const brick of bricks) {
+    console.log(brick);
 }
 
 
