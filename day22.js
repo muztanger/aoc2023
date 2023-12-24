@@ -28,6 +28,10 @@ class Pos {
         return this.x * other.x + this.y * other.y + this.z * other.z;
     }
 
+    mul(scalar) {
+        return new Pos(this.x * scalar, this.y * scalar, this.z * scalar);
+    }
+
     equals(other) {
         return this.x === other.x && this.y === other.y && this.z === other.z;
     }
@@ -38,6 +42,11 @@ class Pos {
             this.z * other.x - this.x * other.z,
             this.x * other.y - this.y * other.x,
         );
+    }
+
+    normalize() {
+        const len = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
+        return new Pos(this.x / len, this.y / len, this.z / len);
     }
 }
 
@@ -209,6 +218,58 @@ test('line intersection', () => {
     }
 });
 
+class Plane {
+    constructor(pos, normal) {
+        this.pos = pos;
+        this.normal = normal.normalize();
+    }
+
+    intersects(line) {
+        // normalize
+        let linePos = line.start;
+        let lineDirection = line.end.sub(line.start).normalize();
+
+        if (this.normal.dot(lineDirection) === 0) {
+            return false;
+        }
+
+        let t = (this.normal.dot(this.pos) - this.normal.dot(linePos)) / this.normal.dot(lineDirection);
+        let intersectionPoint = linePos.add(lineDirection.normalize().mul(t));
+
+        // check if intersectionPoint is within line bounds
+        if (intersectionPoint.x < Math.min(line.start.x, line.end.x) || intersectionPoint.x > Math.max(line.start.x, line.end.x)) {
+            return false;
+        }
+        
+        // check if intersectionPoint is on Plane
+        return this.normal.dot(intersectionPoint) === this.normal.dot(this.pos);
+    }
+}
+
+test('plane intersection', () => {
+    {
+        const a = new Plane(new Pos(0, 0, 0), new Pos(0, 0, 1));
+        const b = new Line(new Pos(0, 0, 0), new Pos(1, 1, 1));
+        assert.ok(a.intersects(b));
+    }
+    {
+        const a = new Plane(new Pos(0, 0, 0), new Pos(0, 0, 1));
+        const b = new Line(new Pos(0, 0, 1), new Pos(1, 1, 2));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Plane(new Pos(0, 0, 0), new Pos(0, 0, 1));
+        const b = new Line(new Pos(0, 0, 1), new Pos(1, 1, 0));
+        assert.ok(!a.intersects(b));
+    }
+    {
+        const a = new Plane(new Pos(0, 0, 0), new Pos(0, 0, 1));
+        const b = new Line(new Pos(0, 0, 1), new Pos(1, 1, -1));
+        assert.ok(!a.intersects(b));
+    }
+});
+
+
 class Brick {
     // Each brick is made up of a single straight line of cubes
     constructor(start, end) {
@@ -226,10 +287,13 @@ class Brick {
     }
 }
 
+
+
+
 const groundZ = 0;
 const bricks = input.split('\n').map(Brick.parse);
 for (const brick of bricks) {
-    console.log(brick);
+    // console.log(brick);
 }
 
 
