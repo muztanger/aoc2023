@@ -16,7 +16,6 @@ if (useExample) {
     input = example;
 }
 
-
 class Hand {
 
     constructor(hand, bid) {
@@ -107,6 +106,7 @@ function part1() {
     }).reduce((a, b) => a + b, 0);
     return result;
 }
+console.log(part1())
 
 test('part 1', () => {
     let p1 = part1();
@@ -138,6 +138,9 @@ class Hand2 {
         delete count['J'];
 
         // five of a kind given jokers
+        if (jokers >= 4) {
+            return 5;
+        }
         for (let j = 0; j <= jokers; j++) {
             if (Object.values(count).includes(5 - j)) {
                 return 5;
@@ -145,22 +148,29 @@ class Hand2 {
         }
 
         // four of a kind
+        if (jokers >= 3) {
+            return 4;
+        }
         for (let j = 0; j <= jokers; j++) {
             if (Object.values(count).includes(4 - j)) {
                 return 4;
             }
         }
 
-        // full house
         if (jokers >= 3) {
-            return 3; // JJJAB -> AAABB
-        } else if (jokers >= 2 && Object.values(count).filter(x => x === 2).length >= 1) {
+            console.log(this.hand, jokers, count);
+        }
+        assert(jokers < 3);
+
+        // full house
+        if (jokers >= 2 && Object.values(count).filter(x => x === 2).length >= 1) {
             return 3; // JJAAB -> AAABB 
         } else if (jokers >= 1 && Object.values(count).filter(x => x === 2).length >= 2) {
             return 3; // JAABB -> AAABB
         } else if (Object.values(count).includes(3) && Object.values(count).includes(2)) {
             return 3; // AAABB
         }
+
         // three of a kind
         for (let j = 0; j <= jokers; j++) {
             if (Object.values(count).includes(3 - j)) {
@@ -267,11 +277,10 @@ test('part 2', () => {
     let p2 = part2();
     if (useExample) {
         assert.equal(p2, 5905);
-        return;
     } else {
         assert.notEqual(p2, 246521649); // too high
         assert.notEqual(p2, 246470519); // too high 
-        assert.equal(p2, 0); // assert fail
+        assert.equal(p2, 246436046);
     }
 });
 console.log(part2());
