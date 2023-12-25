@@ -157,11 +157,6 @@ class Hand2 {
             }
         }
 
-        if (jokers >= 3) {
-            console.log(this.hand, jokers, count);
-        }
-        assert(jokers < 3);
-
         // full house
         if (jokers >= 2 && Object.values(count).filter(x => x === 2).length >= 1) {
             return 3; // JJAAB -> AAABB 
@@ -172,6 +167,9 @@ class Hand2 {
         }
 
         // three of a kind
+        if (jokers >= 2) {
+            return 2;
+        }
         for (let j = 0; j <= jokers; j++) {
             if (Object.values(count).includes(3 - j)) {
                 return 2;
@@ -179,16 +177,17 @@ class Hand2 {
         }
 
         // two pair
-        if (jokers >= 2) {
-            return 1; 
-        } else if (jokers >= 1 && Object.values(count).filter(x => x === 2).length >= 1) {
+        if (jokers >= 1 && Object.values(count).filter(x => x === 2).length >= 1) {
             return 1;
         } else if (Object.values(count).filter(x => x === 2).length >= 2) {
             return 1;
         }
 
         // one pair
-        if (Object.values(count).includes(2) || jokers >= 1) {
+        if (jokers >= 1) {
+            return 0;
+        }
+        if (Object.values(count).includes(2)) {
             return 0;
         }
 
@@ -261,11 +260,6 @@ function part2() {
     }
     hands.sort((a, b) => a.compare(b));
     
-    for (let t = -1; t <= 5; t++) {
-        let moop = hands.filter(x => x.hand.includes('J') && x.type() === t).map(x => {x.t = x.type(); return x;});
-        let x = 10;
-    }
-
     let result = hands.map((hand, i) => {
         // console.log(hand.hand, ':', (i + 1), '*', hand.bid);
         return (i + 1) * hand.bid;
