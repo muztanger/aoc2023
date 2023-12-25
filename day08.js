@@ -48,6 +48,10 @@ class Node {
         // console.log(name, left, right);
         return new Node(name, left, right);
     }
+
+    toString() {
+        return `${this.name} = (${this.left}, ${this.right})`;
+    }
 }
 
 nodes = [];
@@ -135,20 +139,21 @@ for (var key in nodes) {
 
 // count ends per ghost
 for (const ghost of ghosts) {
-    var endCount = 0;
-    var isEnd = false;
-    var index = 0;
-    var visited = new Set();
-    while (!visited.has(ghost.current)) {
-        visited.add(ghost.current);
+    let endCount = 0;
+    let index = 0;
+    let visited = new Set();
+    while (!visited.has(ghost.current.name + "," + instructions[index])) {
+        visited.add(ghost.current.name + "," + instructions[index]);
         ghost.move(instructions[index]);
         if (ghost.isEnd()) {
             endCount++;
         }
         index = (index + 1) % instructions.length;
     }
-    console.log(ghost.current.name, endCount);
+    console.log(ghost.current.name, endCount, visited);
 }
+
+
 return;
 // reset ghosts
 ghosts.forEach(g => g.reset());
