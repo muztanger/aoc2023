@@ -17,3 +17,12 @@ exports.fetchInput = async function (day, year = 2023) {
   return input.trim();
 }
 
+exports.gcd = function (a, b) {
+    if (b === 0) return a;
+    if (b == 0n) return a;
+    return exports.gcd(b, a % b);
+}
+
+exports.lcm = function (a, b) {
+    return a * b / exports.gcd(a, b);
+}
