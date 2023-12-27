@@ -210,67 +210,11 @@ for (var i = 0; i < gs.length; i++) {
     console.log("remainder", gs[i].remainder, gs[i].loopLength, syncStep % gs[i].loopLength);
 }
 
-
-
-// let j = 0;
-// while (isDifferent()) {
-//     for (let k = 0; k < result.length - 1; k++) {
-//         while (result[k] < result[k + 1]) {
-//             result[k] += gs[k][0];
-//         }
-//     }
-//     while (result[result.length - 1] < result[0]) {
-//         result[result.length - 1] += gs[result.length - 1][0];
-//     }
-//     if (++j % 100000000 === 0) {
-//         console.log(result);
-//         j = 0;
-//     }
-// }
-// console.log(result);
-
-// return;
-// // find the lowest common multiple of all loop lengths
-// let index = 0;
-// var lcm = BigInt(ghosts[0].endDiffs[1]);
-// let lcms = [];
-// lcms[index] = lcm;
-// for (var i = 1; i < ghosts.length; i++) {
-//     lcm = ut.lcm(lcm, BigInt(ghosts[i].endDiffs[1]));
-//     lcms[++index] = lcm;
-// }
-// console.log(lcms);
-// console.log("lcm", lcm);
-
 test('part2', () => {
     let p2 = lcm;
     console.log(p2);
-    //        3103294768385448350868
-    //  3103294768385448350869 (is incorrect)
-    // assert.ok(p2 < BigInt(469567940986), `${p2} is too low`);
     assert.ok(p2 != 73770992295, `${p2} is too low`);
     assert.ok(p2 != 3103294768385448350868n, `${p2} is incorrect`);
     assert.ok(p2 != 3103294768385448350869n, `${p2} is incorrect`);
     assert.equal(p2, 18215611419223n, `${p2}`);
 });
-
-// return;
-// // reset ghosts
-// ghosts.forEach(g => g.reset());
-
-// var part2 = 0;
-// var isTotalEnd = false;
-// while (!isTotalEnd) {
-//     part2++;
-//     var endCount = 0;
-//     for (const ghost of ghosts) {
-//         ghost.move(instructions[(part2 - 1) % instructions.length]);
-//         if (ghost.isEnd()) {
-//             endCount++;
-//         }
-//     }
-//     if (endCount === ghosts.length) {
-//         isTotalEnd = true;
-//     }
-// }
-// console.log(part2);
