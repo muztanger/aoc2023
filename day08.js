@@ -198,18 +198,6 @@ for (var i = 1; i < gs.length; i++) {
 }
 console.log("loopLength lcm", lcm);
 
-// find what step the ghosts will be in sync
-let syncStep = 0n;
-for (var i = 0; i < gs.length; i++) {
-    syncStep += gs[i].loopLength * (lcm / gs[i].loopLength);
-}
-
-// find the remainder of the sync step
-console.log("syncStep before", syncStep);
-for (var i = 0; i < gs.length; i++) {
-    console.log("remainder", gs[i].remainder, gs[i].loopLength, syncStep % gs[i].loopLength);
-}
-
 test('part2', () => {
     let p2 = lcm;
     console.log(p2);
