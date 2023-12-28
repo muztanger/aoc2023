@@ -11,49 +11,55 @@ const example = `???.### 1,1,3
 ????.#...#... 4,1,1
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1`;
-input = example;
-
-class Item {
-    constructor(type, length) {
-        this.type = type;
-        this.length = length;
-    }
-
-    matches(str, index) {
-        str = str.substring(index);
-        if (str.length < this.length) {
-            return false;
-        }
-        // .split('').forEeach((c, index) => {
-        //     if (c !== '?' && c !== this.type) {
-        //         return false;
-        //     }
-        // });
-        return true;
-    }
+let useExample = false;
+if (useExample) {
+    input = example;
 }
-
-function count(items, i, spring, s) {
-    if (i >= items.length) {
-        return 0;
-    }
-    let count = 0;
-    
-
-    return count;
-}
-
+let part1 = 0;
 for (const line of input.split('\n').map(x => x.trim()).filter(line => line.length > 0)) {
     const [spring, groupsStr] = line.split(/\s+/);
     const groups = groupsStr.split(',').map(group => parseInt(group));
-    const items = [];
-    groups.forEeach((size, index) => {
-        if (index > 0) {
-            items.push(new Item('.', 1));
+    // generate all permutations of ?=. and ?=#
+    const permutations = [];
+    const permute = (prefix, suffix) => {
+        if (suffix.length === 0) {
+            // trim '.' from beginning and end of prefix
+            let trimmed = prefix.replace(/^\.*|\.*$/g, '');
+            let consecutive = [];
+            let last = '';
+            for (const c of trimmed) {
+                if (c === last) {
+                    consecutive[consecutive.length - 1][1]++;
+                } else {
+                    consecutive.push([c, 1]);
+                    last = c;
+                }
+            }
+            if (consecutive.filter(([c, n]) => c === '#').length !== groups.length) {
+                return;
+            }
+            let i = 0;
+            for (let n of consecutive.filter(([c, n]) => c === '#').map(([c, n]) => n)) {
+                if (n !== groups[i]) {
+                    return;
+                }
+                i++;
+            }
+            permutations.push(prefix);
+            return;
         }
-        items.push(new Item('#', size));
-    });
+        if (suffix[0] === '?') {
+            permute(prefix + '.', suffix.slice(1));
+            permute(prefix + '#', suffix.slice(1));
+            return;
+        }
+        permute(prefix + suffix[0], suffix.slice(1));
+    };
+    permute('', spring);
+    console.log(permutations.length);
+    part1 += permutations.length;
 
-    var x = count(items, 0, spring, 0);
     console.log(spring, groups);
 }
+
+console.log('Part 1:', part1);
