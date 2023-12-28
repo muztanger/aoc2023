@@ -4,7 +4,20 @@ const path = require('node:path');
 const test = require('node:test');
 const ut = require('./utilities.js');
 
-const input = fs.readFileSync(path.basename(__filename).replace(/\.js$/, '.in'), { encoding: 'utf8' });
+let input = fs.readFileSync(path.basename(__filename).replace(/\.js$/, '.in'), { encoding: 'utf8' });
+const useExample = true;
+if (useExample) {
+    input = `...........
+    .S-------7.
+    .|F-----7|.
+    .||.....||.
+    .||.....||.
+    .|L-7.F-J|.
+    .|..|.|..|.
+    .L--J.L--J.
+    ...........`;
+}
+
 
 class Pos {
     constructor(x, y) {
@@ -124,15 +137,62 @@ console.log(part1);
 
 // test part1
 test('part1', () => {
-    assert.equal(part1, 7097);
+    if (useExample) {
+        assert.equal(part1, 23);
+    } else {
+        assert.equal(part1, 7097);
+    }
 });
 
-// find loop area
-var min = new Pos(lines[0].length, lines.length);
+console.log("Part 2");
+
+// expand tiles to 3x3 sprites
+const sprites = {
+    "|": [" # ",
+          " # ", 
+          " # "],
+    "-": ["   ",
+          "###",
+          "   "],
+    "L": [" # ",
+          " ##",
+          "   "],
+    "J": [" # ",
+          "## ",
+          "   "],
+    "7": ["   ",
+          "## ",
+          " # "],
+    "F": ["   ",
+          " ##",
+          " # "],
+    "S": ["   ",
+          " S ",
+          "   "],
+    ".": [".  ",
+          "   ",
+          "   "]
+}
+
+const expandedTiles = [];
+for (const tilePos of loopTiles) {
+    const tile = tiles[tilePos];
+    const sprite = sprites[tile.dir];
+    for (let y = 0; y < sprite.length; y++) {
+        for (let x = 0; x < sprite[y].length; x++) {
+            const pos = new Pos(tile.pos.x * sprite[y].length + x, tile.pos.y * sprite.length + y);
+            expandedTiles[pos.asKey()] = new Tile(pos, sprite[y][x]);
+        }
+    }
+}
+
+console.log("Expanded tiles", Object.keys(expandedTiles).length);
+
+// find loop area of expanded tiles
+var min = new Pos(lines[0].length * 3, lines.length * 3);
 var max = new Pos(0, 0);
-for (const posAsKey of loopTiles.values()) {
-    const tile = tiles[posAsKey];
-    // console.log(tile);
+for (const posAsKey of Object.keys(expandedTiles)) {
+    const tile = expandedTiles[posAsKey];
     min.x = Math.min(min.x, tile.pos.x);
     min.y = Math.min(min.y, tile.pos.y);
     max.x = Math.max(max.x, tile.pos.x);
@@ -141,70 +201,60 @@ for (const posAsKey of loopTiles.values()) {
 
 console.log(min, max);
 
-const innerTiles = new Set();
-const deletedTiles = new Set();
-
-// trace horizontal
-for (var y = min.y; y <= max.y; y++) {
-    var isFirst = true;
-    var count = 0;
-    for (var x = min.x; x <= max.x; x++) {
+// print expanded tiles
+for (let y = min.y; y <= max.y; y++) {
+    let line = "";
+    for (let x = min.x; x <= Math.min(max.x, 200); x++) {
         const pos = new Pos(x, y);
-        if (loopTiles.has(pos.asKey())) {
-            const tile = tiles[pos.asKey()];
-            if (y == 3) {
-                console.log(tile, tile.hasVerticalEdge(), count);
-            }
-            if (tile.hasVerticalEdge()) {
-                count = (count + 1) % 2
-            }
-            isFirst = false;
-            continue;
+        if (expandedTiles[pos.asKey()]) {
+            line += expandedTiles[pos.asKey()].dir;
+        } else {
+            line += " ";
         }
-        if (isFirst) continue;
-        if (tiles[pos.asKey()].dir == '.' && count % 2 == 1) {
+    }
+    console.log(line);
+}
+
+// find inner tiles by raycasting every third y position
+const innerTiles = new Set();
+for (let y = min.y; y <= max.y; y += 3) {
+    let isInside = false;
+    for (let x = min.x - 1; x <= max.x; x++) {
+        const pos = new Pos(x, y);
+        if (expandedTiles[pos.asKey()] && expandedTiles[pos.asKey()].dir == "#") {
+            isInside = !isInside;
+        } else if (isInside) {
             innerTiles.add(pos.asKey());
         }
     }
 }
+
+
 console.log("after horizontal", innerTiles.size);
 
-// // trace vertical
-// for (var x = min.x; x <= max.x; x++) {
-//     var isFirst = true;
-//     var count = 0;
-//     for (var y = min.y; y <= max.y; y++) {
-//         const pos = new Pos(x, y);
-//         if (loopTiles.has(pos.asKey())) {
-//             count++;
-//             isFirst = false;
-//             continue;
-//         }
-//         if (isFirst) continue;
-//         if (tiles[pos.asKey()].dir == '.' && count % 2 == 0) {
-//             if (!deletedTiles.has(pos.asKey())) {
-//                 innerTiles.add(pos.asKey());
-//             }
-//         }
-//     }
-// }
-// console.log("after vertical", innerTiles.size);
-
-// print loop of all tiles and inner tiles
-for (var y = 0; y < lines.length; y++) {
-    var line = "";
-    for (var x = 0; x < lines[y].length; x++) {
+// print inner tiles and expanded tiles
+let count = 0;
+for (let y = min.y; y <= max.y; y++) {
+    let line = "";
+    for (let x = min.x; x <= max.x; x++) {
         const pos = new Pos(x, y);
-        if (loopTiles.has(pos.asKey())) {
-            line += tiles[pos.asKey()].dir;
-            continue;
-        }
-        if (innerTiles.has(pos.asKey())) {
+        if (expandedTiles[pos.asKey()]) {
+            line += expandedTiles[pos.asKey()].dir;
+        } else if (innerTiles.has(pos.asKey())) {
             line += "I";
-            continue;
+            count++;
+        } else {
+            line += " ";
         }
-        line += " ";
     }
     console.log(line);
 }
-console.log(innerTiles.size);
+console.log("inner tiles", count / 3);
+
+test('part2', () => {
+    if (useExample) {
+        assert.equal(count / 3, 4);
+    } else {
+        assert.equal(count / 3, 355);
+    }
+});
