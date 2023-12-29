@@ -12,7 +12,7 @@ const example = `???.### 1,1,3
 ????.#...#... 4,1,1
 ????.######..#####. 1,6,5
 ?###???????? 3,2,1`;
-let useExample = true;
+let useExample = false;
 if (useExample) {
     input = example;
 }
@@ -65,7 +65,7 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
 
 console.log('Part 1:', part1);
 
-let part2 = 0;
+let part2 = BigInt(0);
 for (const line of input.split('\n').map(x => x.trim()).filter(line => line.length > 0)) {
     let [spring, groupsStr] = line.split(/\s+/);
     
@@ -82,12 +82,15 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
     const permutations = [];
     const permute = (prefix, suffix) => {
         permuteCallCount++;
-        if (permuteCallCount > 1000000) {
-            console.log("Too many permutations",prefix,suffix);
-            return;
-        }
+        // if (permuteCallCount > 100000000) {
+        //     console.log("Too many permutations",prefix,suffix);
+        //     return;
+        // }
         let trimmed = prefix.replace(/^\.*/g, '');
         let consecutive = countConsecutive(trimmed).filter(([c, n]) => c === '#');
+        if (consecutive.length > groups.length) {
+            return;
+        }
         if (suffix.length === 0) {
             if (consecutive.length !== groups.length) {
                 return;
@@ -105,13 +108,20 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
         }
         if (suffix[0] === '?') {
             for (let [n, i] of consecutive.map(([c, n], i) => [n, i])) {
-                if (i < consecutive.length - 1 && n !== groups[i]) {
-                    return;
-                } else if (n < groups[i] && prefix[prefix.length - 1] === '#') {
-                    permute(prefix + '#', suffix.slice(1));
-                    return;
-                } else if (n > groups[i]) {
-                    return;
+                if (i < consecutive.length - 1) {
+                    if (n !== groups[i]) {
+                        return;
+                    } 
+                } else {
+                    if (n < groups[i] && prefix[prefix.length - 1] === '#') {
+                        permute(prefix + '#', suffix.slice(1));
+                        return;
+                    } else if (n == groups[i] && prefix[prefix.length - 1] === '#') {
+                        permute(prefix + '.', suffix.slice(1));
+                        return;
+                    } else if (n > groups[i]) {
+                        return;
+                    }
                 }
             }
             permute(prefix + '.', suffix.slice(1));
@@ -129,20 +139,27 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
         }
         permute(prefix + suffix[0], suffix.slice(1));
 
-        function countConsecutive(trimmed) {
-            let consecutive = [];
-            let last = '';
-            for (const c of trimmed) {
-                if (c === last) {
-                    consecutive[consecutive.length - 1][1]++;
-                } else {
-                    consecutive.push([c, 1]);
-                    last = c;
-                }
-            }
-            return consecutive;
-        }
     };
+    var consecutiveMem = new Map();
+    function countConsecutive(trimmed) {
+        if (consecutiveMem.has(trimmed)) {
+            return consecutiveMem.get(trimmed);
+        }
+        let consecutive = [];
+        let last = '';
+        for (const c of trimmed) {
+            if (c === last) {
+                consecutive[consecutive.length - 1][1]++;
+            } else {
+                consecutive.push([c, 1]);
+                last = c;
+            }
+        }
+        if (trimmed.length < Math.log2(1000000)) {
+            consecutiveMem.set(trimmed, consecutive);
+        }
+        return consecutive;
+    }
     permute('', spring);
     console.log("linePermutations", linePermutations);
 }
