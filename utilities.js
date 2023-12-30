@@ -26,3 +26,8 @@ exports.gcd = function (a, b) {
 exports.lcm = function (a, b) {
     return a * b / exports.gcd(a, b);
 }
+
+String.prototype.regexIndexOf = function(regex, startpos) {
+  var indexOf = this.substring(startpos || 0).search(regex);
+  return (indexOf >= 0) ? (indexOf + (startpos || 0)) : indexOf;
+};

@@ -110,40 +110,9 @@ test('part1', () => {
     }
 });
 
-
 let part2 = BigInt(0);
 for (const line of input.split('\n').map(x => x.trim()).filter(line => line.length > 0)) {
     let [spring, groupsStr] = line.split(/\s+/);
-
-    let subSpringPermutations = new Map();
-    const subSpring = spring;
-    const subGroups = groupsStr.split(',').map(group => parseInt(group));
-
-    let subSpringPermutation = new Set();
-    const subPermute = (prefix, suffix) => {
-        if (suffix.length === 0) {
-            let trimmed = prefix.replace(/^\.*|\.*$/g, '');
-            let consecutive = countConsecutive(trimmed).filter(([c, n]) => c === '#').map(([c, n]) => n);
-            let i = 0;
-            for (let n of consecutive) {
-                if (n !== subGroups[i]) {
-                    return;
-                }
-                i++;
-            }
-            subSpringPermutation.add([prefix, consecutive]);
-            return;
-        }
-        if (suffix[0] === '?') {
-            subPermute(prefix + '.', suffix.slice(1));
-            subPermute(prefix + '#', suffix.slice(1));
-            return;
-        }
-        subPermute(prefix + suffix[0], suffix.slice(1));
-    };
-    subPermute('', subSpring);
-    subSpringPermutations.set(subSpring, subSpringPermutation);
-    console.log(subSpringPermutations.get(subSpring));
 
     // unfold the records
     spring = Array(5).fill(spring).join('?');
@@ -152,86 +121,55 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
 
     console.log(spring, groupsStr);
 
-    //TODO breadth first search for all possible combinations of subSprings and save as list of possible group combinations
-    
-    let linePermutations = 0;
-    const permutations = [];
-    let callCount = 0;
-    const N = 1000000000;
-    const permute = (prefix, suffix) => {
-        callCount++;
-        if (callCount > N - 100) {
-            console.log("   prefix:", prefix, "suffix:", suffix);
-        }
-        if (callCount > N) {
-            console.log('too many calls', prefix, suffix);
-            return;
-        }
-        let trimmed = prefix.replace(/^\.*/g, '');
-        let consecutive = countConsecutive(trimmed).filter(([c, n]) => c === '#');
-        if (consecutive.length > groups.length) {
-            return;
-        }
-        if (consecutive.length > 0 && consecutive.length < groups.length && consecutive[consecutive.length - 1][1] == groups[consecutive.length - 1]) {
-            // check if we can fill in the rest with the remaining groups
-            let remaining = groups.slice(consecutive.length);
-            let remainingSum = remaining.reduce((a, b) => a + b, 0);
-            remainingSum += remaining.length - 1; // add the dots
-            if (remainingSum > suffix.length) {
-                return;
+    // for each groups search for the first occurence of the pattern matching the first group
+    let stack = [];
+    stack.push({prefix: '', suffix: spring, groupIndex: 0});
+    let springCount = 0;
+    while (stack.length > 0) {
+        if (stack.length > 100000) {
+            console.log('stack overflow');
+            for (let i = 0; i < 100; i++) {
+                console.log(stack[i]);
             }
+            break;
         }
-        if (suffix.length === 0) {
-            if (consecutive.length !== groups.length) {
-                return;
-            }
-            let i = 0;
-            for (let n of consecutive.map(([c, n]) => n)) {
-                if (n !== groups[i]) {
-                    return;
-                }
-                i++;
-            }
+        let {prefix, suffix, groupIndex} = stack.pop();
+        if (groupIndex === groups.length) {
             part2++;
-            linePermutations++;
-            return;
+            springCount++;
+            continue;
         }
-        if (suffix[0] === '?') {
-            for (let [n, i] of consecutive.map(([c, n], i) => [n, i])) {
-                if (i < consecutive.length - 1) {
-                    if (n !== groups[i]) {
-                        return;
-                    } 
-                } else {
-                    if (n < groups[i] && prefix[prefix.length - 1] === '#') {
-                        permute(prefix + '#', suffix.slice(1));
-                        return;
-                    } else if (n == groups[i] && prefix[prefix.length - 1] === '#') {
-                        permute(prefix + '.', suffix.slice(1));
-                        return;
-                    } else if (n > groups[i]) {
-                        return;
+        let group = groups[groupIndex];
+        const regex = new RegExp(`[?#]{${group}}`);
+        let index = suffix.regexIndexOf(regex);
+        let isSkip = false;
+        while (index >= 0 && !isSkip) {
+            // replace the group with the pattern
+            if (index + group == suffix.length || (index + group < suffix.length && suffix[index + group] !== '#')) {
+                // if the remaining groups length does not fit into the suffix length, skip
+                if (suffix.length - group < groups.slice(groupIndex + 1).reduce((acc, cur) => acc + cur + 1, -1)) {
+                    isSkip = true;
+                    break;
+                }
+
+                let nextPrefix = prefix + suffix.slice(0, index).replaceAll('?','.') + '#'.repeat(group) + ".";
+                let trimmed = nextPrefix.replace(/^\.*|\?.*$/g, '');
+                let consecutive = countConsecutive(trimmed).filter(([c, n]) => c === '#').map(([c, n]) => n);
+                
+                for (let i = 0; i < consecutive.length; i++) {
+                    if (consecutive[i] !== groups[i]) {
+                        isSkip = true;
+                        break;
                     }
                 }
+                if (!isSkip) {
+                    stack.push({prefix: nextPrefix, suffix: suffix.slice(index + group + 1), groupIndex: groupIndex + 1});
+                }
             }
-            permute(prefix + '.', suffix.slice(1));
-            permute(prefix + '#', suffix.slice(1));
-            return;
+            index = suffix.regexIndexOf(regex, index + 1);
         }
-        for (let [n, i] of consecutive.map(([c, n], i) => [n, i])) {
-            if (i < consecutive.length - 1 && n !== groups[i]) {
-                return;
-            } else if (n < groups[i] && suffix[0] === '.') {
-                return;
-            } else if (n > groups[i] && suffix[0] === '#') {
-                return;
-            }
-        }
-        permute(prefix + suffix[0], suffix.slice(1));
-
-    };
-    permute('', spring);
-    console.log('callCount', callCount, 'linePermutations', linePermutations);
+    }
+    console.log("springCount", springCount);
 }
 
 console.log('Part 2:', part2);
