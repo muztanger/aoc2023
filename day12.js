@@ -110,6 +110,16 @@ test('part1', () => {
     }
 });
 
+const regMem = new Map();
+function getGroupRegex(group) {
+    if (regMem.has(group)) {
+        return regMem.get(group);
+    }
+    let regex = new RegExp(`[?#]{${group}}`);
+    regMem.set(group, regex);
+    return regex;
+}
+
 let part2 = BigInt(0);
 for (const line of input.split('\n').map(x => x.trim()).filter(line => line.length > 0)) {
     let [spring, groupsStr] = line.split(/\s+/);
@@ -123,7 +133,7 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
 
     // for each groups search for the first occurence of the pattern matching the first group
     let stack = [];
-    stack.push({prefix: '', suffix: spring, groupIndex: 0});
+    stack.push({prefix: '', suffix: spring, groupIndex: 0, prefixConsecutive: []});
     let springCount = 0;
     while (stack.length > 0) {
         if (stack.length > 100000) {
@@ -133,14 +143,14 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
             }
             break;
         }
-        let {prefix, suffix, groupIndex} = stack.pop();
+        let {prefix, suffix, groupIndex, prefixConsecutive} = stack.pop();
         if (groupIndex === groups.length) {
             part2++;
             springCount++;
             continue;
         }
         let group = groups[groupIndex];
-        const regex = new RegExp(`[?#]{${group}}`);
+        const regex = getGroupRegex(group);
         let index = suffix.regexIndexOf(regex);
         let isSkip = false;
         while (index >= 0 && !isSkip) {
@@ -152,10 +162,16 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
                     break;
                 }
 
-                let nextPrefix = prefix + suffix.slice(0, index).replaceAll('?','.') + '#'.repeat(group) + ".";
-                let trimmed = nextPrefix.replace(/^\.*|\?.*$/g, '');
-                let consecutive = countConsecutive(trimmed).filter(([c, n]) => c === '#').map(([c, n]) => n);
-                
+                const preSlice = suffix.slice(0, index).replaceAll('?','.');
+                const prefixSuf = preSlice + '#'.repeat(group) + ".";
+                let nextPrefix = prefix + prefixSuf;
+                let consecutive = [];
+                if (preSlice.includes('#')) {
+                    consecutive = prefixConsecutive.concat(countConsecutive(prefixSuf).filter(([c, n]) => c === '#').map(([c, n]) => n));
+                } else {
+                    consecutive = prefixConsecutive.concat([group]);
+                }
+                                
                 for (let i = 0; i < consecutive.length; i++) {
                     if (consecutive[i] !== groups[i]) {
                         isSkip = true;
@@ -163,7 +179,7 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
                     }
                 }
                 if (!isSkip) {
-                    stack.push({prefix: nextPrefix, suffix: suffix.slice(index + group + 1), groupIndex: groupIndex + 1});
+                    stack.push({prefix: nextPrefix, suffix: suffix.slice(index + group + 1), groupIndex: groupIndex + 1, prefixConsecutive: consecutive});
                 }
             }
             index = suffix.regexIndexOf(regex, index + 1);
