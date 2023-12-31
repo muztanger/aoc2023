@@ -18,6 +18,56 @@ if (useExample) {
     input = example;
 }
 
+class LimitedMap {
+    constructor(limit) {
+        this.limit = limit;
+        this.map = new Map();
+        this.keys = [];
+    }
+
+    set(key, value) {
+        if (this.map.has(key)) {
+            this.map.set(key, value);
+            return;
+        }
+        if (this.keys.length >= this.limit) {
+            let keyToRemove = this.keys.shift();
+            this.map.delete(keyToRemove);
+        }
+        this.keys.push(key);
+        this.map.set(key, value);
+    }
+
+    get(key) {
+        return this.map.get(key);
+    }
+
+    has(key) {
+        return this.map.has(key);
+    }
+}
+
+const countConsecutiveMem = new LimitedMap(1000000);
+function countConsecutive(trimmed) {
+    if (countConsecutiveMem.has(trimmed)) {
+        return countConsecutiveMem.get(trimmed);
+    }
+    let consecutive = [];
+    let last = '';
+    for (const c of trimmed) {
+        if (c === '#') {
+            if (c === last) {
+                consecutive[consecutive.length - 1]++;
+            } else {
+                consecutive.push(1);
+            }
+        }
+        last = c;
+    }
+    countConsecutiveMem.set(trimmed, consecutive);
+    return consecutive;
+}
+
 var startPart1 = performance.now();
 let part1 = BigInt(0);
 for (const line of input.split('\n').map(x => x.trim()).filter(line => line.length > 0)) {
@@ -28,7 +78,7 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
     const permutations = [];
     const permute = (prefix, suffix) => {
         let trimmed = prefix.replace(/^\.*/g, '');
-        let consecutive = countConsecutive(trimmed).filter(([c, n]) => c === '#');
+        let consecutive = countConsecutive(trimmed);
         if (consecutive.length > groups.length) {
             return;
         }
@@ -37,7 +87,7 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
                 return;
             }
             let i = 0;
-            for (let n of consecutive.map(([c, n]) => n)) {
+            for (let n of consecutive) {
                 if (n !== groups[i]) {
                     return;
                 }
@@ -48,7 +98,7 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
             return;
         }
         if (suffix[0] === '?') {
-            for (let [n, i] of consecutive.map(([c, n], i) => [n, i])) {
+            for (let [n, i] of consecutive.map((n, i) => [n, i])) {
                 if (i < consecutive.length - 1) {
                     if (n !== groups[i]) {
                         return;
@@ -69,7 +119,7 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
             permute(prefix + '#', suffix.slice(1));
             return;
         }
-        for (let [n, i] of consecutive.map(([c, n], i) => [n, i])) {
+        for (let [n, i] of consecutive.map((n, i) => [n, i])) {
             if (i < consecutive.length - 1 && n !== groups[i]) {
                 return;
             } else if (n < groups[i] && suffix[0] === '.') {
@@ -84,19 +134,6 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
     permute('', spring);
 }
 
-function countConsecutive(trimmed) {
-    let consecutive = [];
-    let last = '';
-    for (const c of trimmed) {
-        if (c === last) {
-            consecutive[consecutive.length - 1][1]++;
-        } else {
-            consecutive.push([c, 1]);
-            last = c;
-        }
-    }
-    return consecutive;
-}
 
 var endPart1 = performance.now();
 console.log(`Time to run: ${endPart1 - startPart1}ms`);
@@ -182,7 +219,6 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
                 const remainingGroupsRegex = getRemainingGroupsRegex(groups, groupIndex);
                 const nextSuffix = suffix.slice(index + group + 1);
 
-                // if the remaining groups length does not fit into the suffix length, skip
                 if (isRemainingGroupsFits(nextSuffix, remainingGroupsRegex)) {
                     isSkip = true;
                     break;
@@ -193,7 +229,7 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
                 let nextPrefix = prefix + prefixSuf;
                 let consecutive = [];
                 if (preSlice.includes('#')) {
-                    consecutive = prefixConsecutive.concat(countConsecutive(prefixSuf).filter(([c, n]) => c === '#').map(([c, n]) => n));
+                    consecutive = prefixConsecutive.concat(countConsecutive(prefixSuf));
                 } else {
                     consecutive = prefixConsecutive.concat([group]);
                 }
