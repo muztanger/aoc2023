@@ -18,7 +18,7 @@ if (useExample) {
     input = example;
 }
 
-var start = performance.now();
+var startPart1 = performance.now();
 let part1 = BigInt(0);
 for (const line of input.split('\n').map(x => x.trim()).filter(line => line.length > 0)) {
     let [spring, groupsStr] = line.split(/\s+/);
@@ -98,8 +98,8 @@ function countConsecutive(trimmed) {
     return consecutive;
 }
 
-var end = performance.now();
-console.log(`Time to run: ${end - start}ms`);
+var endPart1 = performance.now();
+console.log(`Time to run: ${endPart1 - startPart1}ms`);
 console.log('Part 1:', part1);
 
 test('part1', () => {
@@ -120,6 +120,29 @@ function getGroupRegex(group) {
     return regex;
 }
 
+const groupRegMem = new Map();
+function getRemainingGroupsRegex(groups, groupIndex) {
+    let key = groups.slice(groupIndex + 1).join(',');
+    if (groupRegMem.has(key)) {
+        return groupRegMem.get(key);
+    }
+    let regex = new RegExp(groups.slice(groupIndex + 1).map(group => `[?#]{${group}}`).join('\.+'));
+    groupRegMem.set(key, regex);
+    return regex;
+}
+
+const remainingGroupsMem = new Map();
+function isRemainingGroupsFits(nextSuffix, remainingGroupsRegex) {
+    let key = nextSuffix + remainingGroupsRegex.toString();
+    if (remainingGroupsMem.has(key)) {
+        return remainingGroupsMem.get(key);
+    }
+    let result = nextSuffix.regexIndexOf(remainingGroupsRegex) < 0;
+    remainingGroupsMem.set(key, result);
+    return result;
+}
+
+var startPart2 = performance.now();
 let part2 = BigInt(0);
 for (const line of input.split('\n').map(x => x.trim()).filter(line => line.length > 0)) {
     let [spring, groupsStr] = line.split(/\s+/);
@@ -154,10 +177,13 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
         let index = suffix.regexIndexOf(regex);
         let isSkip = false;
         while (index >= 0 && !isSkip) {
-            // replace the group with the pattern
             if (index + group == suffix.length || (index + group < suffix.length && suffix[index + group] !== '#')) {
+                // create regex for remaining groups
+                const remainingGroupsRegex = getRemainingGroupsRegex(groups, groupIndex);
+                const nextSuffix = suffix.slice(index + group + 1);
+
                 // if the remaining groups length does not fit into the suffix length, skip
-                if (suffix.length - group < groups.slice(groupIndex + 1).reduce((acc, cur) => acc + cur + 1, -1)) {
+                if (isRemainingGroupsFits(nextSuffix, remainingGroupsRegex)) {
                     isSkip = true;
                     break;
                 }
@@ -179,7 +205,7 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
                     }
                 }
                 if (!isSkip) {
-                    stack.push({prefix: nextPrefix, suffix: suffix.slice(index + group + 1), groupIndex: groupIndex + 1, prefixConsecutive: consecutive});
+                    stack.push({prefix: nextPrefix, suffix: nextSuffix, groupIndex: groupIndex + 1, prefixConsecutive: consecutive});
                 }
             }
             index = suffix.regexIndexOf(regex, index + 1);
@@ -187,5 +213,15 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
     }
     console.log("springCount", springCount);
 }
+var endPart2 = performance.now();
 
 console.log('Part 2:', part2);
+console.log(`Time to run Part 2: ${endPart2 - startPart2}ms`);
+
+test('part2', () => {
+    if (useExample) {
+        assert.strictEqual(part2, BigInt(525152));
+    } else {
+        assert.strictEqual(part2, BigInt(-1));
+    }
+});
