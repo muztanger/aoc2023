@@ -203,6 +203,6 @@ test('part2', () => {
     if (useExample) {
         assert.strictEqual(part2, BigInt(525152));
     } else {
-        assert.strictEqual(part2, BigInt(-1));
+        assert.strictEqual(part2, 10153896718999n);
     }
 });
