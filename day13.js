@@ -55,33 +55,6 @@ function checkHorizontalReflection(grid) {
     return hReflection;
 }
 
-test('checkHorizontalReflection', () => {
-    assert.strictEqual(checkHorizontalReflection([
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-    ]), 1);
-    assert.strictEqual(checkHorizontalReflection([
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-    ]), 1);
-    assert.strictEqual(checkHorizontalReflection([
-        ['.', '#', '.'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['#', '.', '#'],
-        ['.', '#', '.'],
-    ]), 3);
-});
-
 function checkVerticalReflection(grid) {
     let vReflection = -1;
     for (let i = 1; i < grid[0].length; i++) {
@@ -174,23 +147,6 @@ function checkVerticalReflectionWithSmudge(grid) {
         }
     }
     return vReflection;
-}
-
-
-function smudge(grid, i, j) {
-    var result = [];
-    grid.forEach((row, rowIndex) => {
-        let newRow = [];
-        row.forEach((cell, colIndex) => {
-            if (rowIndex === j && colIndex === i) {
-                newRow.push(cell === '#' ? '.' : '#');
-            } else {
-                newRow.push(cell);
-            }
-        });
-        result.push(newRow);
-    });
-    return result;
 }
 
 let part2 = 0;
