@@ -210,3 +210,6 @@ for (const grid of grids) {
 // 39178 is too low
 // 57591 is too high
 console.log("Part 2:", part2);
+test('Part 2', () => {
+    assert.strictEqual(part2, 42695);
+});
