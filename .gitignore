@@ -402,3 +402,28 @@ session_cookie.txt
 # Advent of Code
 *.input
 *.in
+
+# cpp
+*.exe
+*.out
+*.o
+*.obj
+*.dll
+*.so
+*.dylib
+*.gcno
+*.gcda
+*.gcov
+*.pgo
+*.pgc
+*.pgd
+*.pgc.orig
+*.pgd.orig
+*.profraw
+*.profdata
+*.ll
+*.s
+*.a
+*.lib
+*.exp
+*.pdb
