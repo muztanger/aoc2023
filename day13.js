@@ -55,6 +55,33 @@ function checkHorizontalReflection(grid) {
     return hReflection;
 }
 
+test('checkHorizontalReflection', () => {
+    assert.strictEqual(checkHorizontalReflection([
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+    ]), 1);
+    assert.strictEqual(checkHorizontalReflection([
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+    ]), 1);
+    assert.strictEqual(checkHorizontalReflection([
+        ['.', '#', '.'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['#', '.', '#'],
+        ['.', '#', '.'],
+    ]), 3);
+});
+
 function checkVerticalReflection(grid) {
     let vReflection = -1;
     for (let i = 1; i < grid[0].length; i++) {
@@ -105,6 +132,51 @@ test('Part 1', () => {
     assert.strictEqual(part1, 26957);
 });
 
+function checkHorizontalReflectionWithSmudge(grid) {
+    let hReflection = -1;
+    for (let i = 1; i < grid.length; i++) {
+        let r1 = i - 1;
+        let r2 = i;
+        let diff = 0;
+        while (r1 >= 0 && r2 < grid.length) {
+            for (let c = 0; c < grid[i].length; c++) {
+                if (grid[r1][c] !== grid[r2][c]) {
+                    diff++;
+                }
+            }
+            r1--;
+            r2++;
+        }
+        if (diff == 1) {
+            return i;
+        }
+    }
+    return hReflection;
+}
+
+function checkVerticalReflectionWithSmudge(grid) {
+    let vReflection = -1;
+    for (let i = 1; i < grid[0].length; i++) {
+        let c1 = i - 1;
+        let c2 = i;
+        let diff = 0;
+        while (c1 >= 0 && c2 < grid[0].length) {
+            for (let r = 0; r < grid.length; r++) {
+                if (grid[r][c1] !== grid[r][c2]) {
+                    diff++;
+                }
+            }
+            c1--;
+            c2++;
+        }
+        if (diff == 1) {
+            return i;
+        }
+    }
+    return vReflection;
+}
+
+
 function smudge(grid, i, j) {
     var result = [];
     grid.forEach((row, rowIndex) => {
@@ -122,37 +194,18 @@ function smudge(grid, i, j) {
 }
 
 let part2 = 0;
-for (let index = 0; index < grids.length; index++) {
-    const grid = grids[index];
-    const orig = reflections[index];
-    found = [];
-    for (let i = 0; i < grid[0].length; i++) {
-        for (let j = 0; j < grid.length; j++) {
-            let smudged = smudge(grid, i, j);
-            var hReflection = checkHorizontalReflection(smudged);
-            var vReflection = checkVerticalReflection(smudged);
-            if (!found.some(xs => xs[0] === hReflection && xs[1] === vReflection) && (hReflection > 0 || vReflection > 0)) {
-                
-                found.push([hReflection, vReflection])
-            }
-        }
+for (const grid of grids) {
+    let hReflection = checkHorizontalReflectionWithSmudge(grid);
+    if (hReflection > 0) {
+        part2 += 100 * hReflection;
     }
-    console.log(index, orig, found);
-    if (found.length === 0) {
-        console.log("No reflections found for", index);
-        found.push(orig);
+    let vReflection = checkVerticalReflectionWithSmudge(grid);
+    if (vReflection > 0) {
+        part2 += vReflection;
     }
-    for (let i = 0; i < found.length; i++) {
-        let hReflection = found[i][0];
-        if (hReflection > 0 && hReflection !== orig[0]) {
-            part2 += 100 * hReflection;
-        }
-        let vReflection = found[i][1];
-        if (vReflection > 0 && vReflection !== orig[1]) {
-            part2 += vReflection;
-        }
-    }
+    reflections.push([hReflection, vReflection]);
 }
+
 // 30551 is too low
 // 39178 is too low
 // 57591 is too high
