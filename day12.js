@@ -147,37 +147,6 @@ test('part1', () => {
     }
 });
 
-const regMem = new Map();
-function getGroupRegex(group) {
-    if (regMem.has(group)) {
-        return regMem.get(group);
-    }
-    let regex = new RegExp(`[?#]{${group}}`);
-    regMem.set(group, regex);
-    return regex;
-}
-
-const groupRegMem = new Map();
-function getRemainingGroupsRegex(groups, groupIndex) {
-    let key = groups.slice(groupIndex + 1).join(',');
-    if (groupRegMem.has(key)) {
-        return groupRegMem.get(key);
-    }
-    let regex = new RegExp(groups.slice(groupIndex + 1).map(group => `[?#]{${group}}`).join('\.+'));
-    groupRegMem.set(key, regex);
-    return regex;
-}
-
-const remainingGroupsMem = new Map();
-function isRemainingGroupsFits(nextSuffix, remainingGroupsRegex) {
-    let key = nextSuffix + remainingGroupsRegex.toString();
-    if (remainingGroupsMem.has(key)) {
-        return remainingGroupsMem.get(key);
-    }
-    let result = nextSuffix.regexIndexOf(remainingGroupsRegex) < 0;
-    remainingGroupsMem.set(key, result);
-    return result;
-}
 
 var startPart2 = performance.now();
 let part2 = BigInt(0);
@@ -191,62 +160,38 @@ for (const line of input.split('\n').map(x => x.trim()).filter(line => line.leng
 
     console.log(spring, groupsStr);
 
-    // for each groups search for the first occurence of the pattern matching the first group
-    let stack = [];
-    stack.push({prefix: '', suffix: spring, groupIndex: 0, prefixConsecutive: []});
-    let springCount = 0;
-    while (stack.length > 0) {
-        if (stack.length > 100000) {
-            console.log('stack overflow');
-            for (let i = 0; i < 100; i++) {
-                console.log(stack[i]);
+    let funMemories = new Map();
+    function theFun(spring, groups, springIndex, groupIndex, count) {
+        let key = `${springIndex},${groupIndex},${count}`;
+        if (funMemories.has(key)) {
+            return funMemories.get(key);
+        }
+        if (springIndex === spring.length) {
+            if (groupIndex === groups.length && count == 0) {
+                return 1;
+            } else if (groupIndex === groups.length - 1 && count == groups[groupIndex]) {
+                return 1;
+            } else {
+                return 0;
             }
-            break;
         }
-        let {prefix, suffix, groupIndex, prefixConsecutive} = stack.pop();
-        if (groupIndex === groups.length) {
-            part2++;
-            springCount++;
-            continue;
-        }
-        let group = groups[groupIndex];
-        const regex = getGroupRegex(group);
-        let index = suffix.regexIndexOf(regex);
-        let isSkip = false;
-        while (index >= 0 && !isSkip) {
-            if (index + group == suffix.length || (index + group < suffix.length && suffix[index + group] !== '#')) {
-                // create regex for remaining groups
-                const remainingGroupsRegex = getRemainingGroupsRegex(groups, groupIndex);
-                const nextSuffix = suffix.slice(index + group + 1);
-
-                if (isRemainingGroupsFits(nextSuffix, remainingGroupsRegex)) {
-                    isSkip = true;
-                    break;
-                }
-
-                const preSlice = suffix.slice(0, index).replaceAll('?','.');
-                const prefixSuf = preSlice + '#'.repeat(group) + ".";
-                let nextPrefix = prefix + prefixSuf;
-                let consecutive = [];
-                if (preSlice.includes('#')) {
-                    consecutive = prefixConsecutive.concat(countConsecutive(prefixSuf));
-                } else {
-                    consecutive = prefixConsecutive.concat([group]);
-                }
-                                
-                for (let i = 0; i < consecutive.length; i++) {
-                    if (consecutive[i] !== groups[i]) {
-                        isSkip = true;
-                        break;
-                    }
-                }
-                if (!isSkip) {
-                    stack.push({prefix: nextPrefix, suffix: nextSuffix, groupIndex: groupIndex + 1, prefixConsecutive: consecutive});
+        let result = 0;
+        for (let c of ['.', '#']) {
+            if (spring[springIndex] === '?' || spring[springIndex] === c) {
+                if (c == '.' && count == 0) {
+                    result += theFun(spring, groups, springIndex + 1, groupIndex, 0);
+                } else if (c == '.' && count > 0 && groupIndex < groups.length && groups[groupIndex] == count) {
+                    result += theFun(spring, groups, springIndex + 1, groupIndex + 1, 0);
+                } else if (c == '#') {
+                    result += theFun(spring, groups, springIndex + 1, groupIndex, count + 1);
                 }
             }
-            index = suffix.regexIndexOf(regex, index + 1);
         }
+        funMemories.set(key, result);
+        return result;
     }
+    let springCount = theFun(spring, groups, 0, 0, 0);
+    part2 += BigInt(springCount);
     console.log("springCount", springCount);
 }
 var endPart2 = performance.now();
