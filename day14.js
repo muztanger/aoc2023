@@ -120,50 +120,101 @@ const printRocks = (rocks) => {
 
 printRocks(rocks);
 
+let rockMap = new Map();
+for (let key in rocks) {
+    rockMap.set(rocks[key].pos.toString(), rocks[key]);
+}
 const tilt = (dir) => {
-    let dp = null;
-    let sort = null;
+    // if (useExample) {
+    //     console.log('Tilt', dir);
+    //     console.log('Before tilt:');
+    //     printRocks(rocks);
+    // }
     switch (dir) {
         case 'N':
-            dp = new Pos(0, -1);
-            sort = (a, b) => a.pos.y - b.pos.y;
+            {
+                let nextRockMap = new Map();
+                for (let x = area.min.x; x <= area.max.x; x++) {
+                    let lastSolidY = area.min.y - 1;
+                    for (let y = area.min.y; y <= area.max.y; y++) {
+                        let rock = rockMap.get(new Pos(x, y).toString());
+                        if (rock) {
+                            if (y - lastSolidY > 1 && rock.type === 'O') {
+                                rock.pos.y = lastSolidY + 1;
+                            }
+                            nextRockMap.set(rock.pos.toString(), rock);
+                            lastSolidY = rock.pos.y;
+                        }
+                    }
+                }
+                rockMap = nextRockMap;
+            }
             break;
         case 'S':
-            dp = new Pos(0, 1);
-            sort = (a, b) => b.pos.y - a.pos.y;
+            {
+                let nextRockMap = new Map();
+                for (let x = area.min.x; x <= area.max.x; x++) {
+                    let lastSolidY = area.max.y + 1;
+                    for (let y = area.max.y; y >= area.min.y; y--) {
+                        let rock = rockMap.get(new Pos(x, y).toString());
+                        if (rock) {
+                            if (lastSolidY - y > 1 && rock.type === 'O') {
+                                rock.pos.y = lastSolidY - 1;
+                            }
+                            nextRockMap.set(rock.pos.toString(), rock);
+                            lastSolidY = rock.pos.y;
+                        }
+                    }
+                }
+                rockMap = nextRockMap;
+            }
             break;
         case 'E':
-            dp = new Pos(1, 0);
-            sort = (a, b) => b.pos.x - a.pos.x;
+            {
+                let nextRockMap = new Map();
+                for (let y = area.min.y; y <= area.max.y; y++) {
+                    let lastSolidX = area.max.x + 1;
+                    for (let x = area.max.x; x >= area.min.x; x--) {
+                        let rock = rockMap.get(new Pos(x, y).toString());
+                        if (rock) {
+                            if (lastSolidX - x > 1 && rock.type === 'O') {
+                                rock.pos.x = lastSolidX - 1;
+                            }
+                            nextRockMap.set(rock.pos.toString(), rock);
+                            lastSolidX = rock.pos.x;
+                        }
+                    }
+                }
+                rockMap = nextRockMap;
+            }
             break;
         case 'W':
-            dp = new Pos(-1, 0);
-            sort = (a, b) => a.pos.x - b.pos.x;
+            {
+                let nextRockMap = new Map();
+                for (let y = area.min.y; y <= area.max.y; y++) {
+                    let lastSolidX = area.min.x - 1;
+                    for (let x = area.min.x; x <= area.max.x; x++) {
+                        let rock = rockMap.get(new Pos(x, y).toString());
+                        if (rock) {
+                            if (x - lastSolidX > 1 && rock.type === 'O') {
+                                rock.pos.x = lastSolidX + 1;
+                            }
+                            nextRockMap.set(rock.pos.toString(), rock);
+                            lastSolidX = rock.pos.x;
+                        }
+                    }
+                }
+                rockMap = nextRockMap;
+            }
             break;
         default:
             break;
     }
-    
-    roll.sort(sort);
-    let anyMoved = true;
-    while (anyMoved) {
-        anyMoved = false;
-        for (let rock of roll) {
-            let moved = true;
-            while (moved) {
-                moved = false;
-                let next = rock.pos.add(dp);
-                if (!area.contains(next)) {
-                    continue;
-                }
-                if (!rocks.some(r => r.pos.equals(next))) {
-                    rock.pos = new Pos(next.x, next.y);
-                    moved = true;
-                    anyMoved = true;
-                }
-            }
-        }
-    }
+    // if (useExample) {
+    //     console.log('After tilt:');
+    //     printRocks(rocks);
+    //     console.log();
+    // }
 }
 
 tilt('N');
@@ -191,6 +242,10 @@ test ('Part 1', () => {
 
 console.log('Part 2:');
 readInput();
+rockMap = new Map();
+for (let key in rocks) {
+    rockMap.set(rocks[key].pos.toString(), rocks[key]);
+}
 console.log('area:', area.toString());
 printRocks(rocks);
 
@@ -207,13 +262,20 @@ let mem = new Map();
 let loop = [];
 let loopStart = -1;
 let index = 0;
-for (let c = 1; c <= 1000000; c++) {
-    const state = rocks.filter(r => r.type == 'O').map(rock => rock.pos.toString()).join(';');
+let c = 1;
+function getState() {
+    // return rocks.filter(r => r.type == 'O').map(rock => rock.pos.toString()).join(';');
+    // return totalLoad();
+    return rocks.filter(r => r.type == 'O').map(rock => rock.pos.toString()).join(';').hashCode();
+}
+for (;; c++) {
+    const state = getState();
     if (mem.has(state)) {
         console.log('Found loop');
         if (loopStart < 0) {
             loopStart = index;
         }
+        loop.push(state);
         let nextState = mem.get(state).next;
         while (nextState != state) {
             loop.push(nextState);
@@ -223,25 +285,34 @@ for (let c = 1; c <= 1000000; c++) {
     } else {
         const currentLoad = totalLoad();
         cycle();
-        const nextState = rocks.filter(r => r.type == 'O').map(rock => rock.pos.toString()).join(';');
+        const nextState = getState();
         mem.set(state, {'load':currentLoad, 'next': nextState});
     }
 
     cycleTimes.push(performance.now());
-    console.log(`After ${c} cycles: ${totalLoad()}`);
+    if (!useExample && c % 1000 === 0) {
+        console.log(`After ${c} cycles: ${totalLoad()}`);
+    }
     if (useExample) {
         printRocks(rocks);
+        console.log();
     }
-    console.log();
     index++;
 }
+let end = performance.now();
+console.log('Loop start:', loopStart, 'Loop length:', loop.length);
 const part2 = mem.get(loop[(1000000000 - loopStart) % loop.length]).load;
 console.log('Part 2:', part2);
-
+console.log('off by one:', mem.get(loop[(1000000000 - loopStart - 1) % loop.length]).load);
+console.log('off by minus one:', mem.get(loop[(1000000000 - loopStart + 1) % loop.length]).load);
+// console.log('Cycle times:', cycleTimes.map((t, i) => i > 0 ? t - cycleTimes[i - 1] : t));
+console.log('Total time:', end - start);
 test('Part 2', () => {
     if (useExample) {
         assert.equal(part2, 64);
     } else {
+        assert.notEqual(part2, 96758); // too low
+        assert.notEqual(part2, 96927); // too low
         assert.equal(part2, -1);
     }
 });
