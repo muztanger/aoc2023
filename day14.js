@@ -6,7 +6,7 @@ const ut = require('./utilities.js');
 const { performance } = require('perf_hooks');
 
 let input = fs.readFileSync(path.basename(__filename).replace(/\.js$/, '.in'), { encoding: 'utf8' });
-let useExample = true;
+let useExample = false;
 if (useExample) {
     input = `O....#....
 O.OO#....#
@@ -144,9 +144,9 @@ const tilt = (dir) => {
             break;
     }
     
+    roll.sort(sort);
     let anyMoved = true;
     while (anyMoved) {
-        // roll.sort(sort);
         anyMoved = false;
         for (let rock of roll) {
             let moved = true;
