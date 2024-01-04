@@ -303,8 +303,9 @@ let end = performance.now();
 console.log('Loop start:', loopStart, 'Loop length:', loop.length);
 const part2 = mem.get(loop[(1000000000 - loopStart) % loop.length]).load;
 console.log('Part 2:', part2);
-console.log('off by one:', mem.get(loop[(1000000000 - loopStart - 1) % loop.length]).load);
-console.log('off by minus one:', mem.get(loop[(1000000000 - loopStart + 1) % loop.length]).load);
+for (let di = -10; di <= 10; di++) {
+    console.log('off by', di, ':', mem.get(loop[(1000000000 - loopStart + di) % loop.length]).load);
+}
 // console.log('Cycle times:', cycleTimes.map((t, i) => i > 0 ? t - cycleTimes[i - 1] : t));
 console.log('Total time:', end - start);
 test('Part 2', () => {
@@ -313,6 +314,9 @@ test('Part 2', () => {
     } else {
         assert.notEqual(part2, 96758); // too low
         assert.notEqual(part2, 96927); // too low
+        assert.notEqual(part2, 96962); // too low
+        assert.notEqual(part2, 96994); // 96994 incorrect answer
+        assert.notEqual(part2, 97044); // 97044 incorrect answer
         assert.equal(part2, -1);
     }
 });
