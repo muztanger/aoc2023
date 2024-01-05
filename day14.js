@@ -259,8 +259,6 @@ test ('Part 1', () => {
 console.log('Part 2:');
 const rockGridPart2 = RockGrid.fromInput(input);
 
-let start = performance.now();
-let cycleTimes = [];
 let mem = new Map();
 let loop = [];
 let loopStart = -1;
@@ -268,7 +266,6 @@ let index = 0;
 for (;;) {
     const state = rockGridPart2.getState();
     if (mem.has(state)) {
-        console.log('Found loop');
         if (loopStart < 0) {
             loopStart = index;
         }
@@ -286,27 +283,11 @@ for (;;) {
         mem.set(state, {'load':currentLoad, 'next': nextState});
     }
 
-    cycleTimes.push(performance.now());
-    const c = index + 1;
-    if (!useExample && c % 1000 === 0) {
-        const now = performance.now();
-        console.log(`After ${c} cycles: load=${totalLoad()} totalTime=${now - start} ms avgTime=${(now - start) / c} ms`);
-    }
-    if (useExample) {
-        rockGridPart2.print();
-        console.log();
-    }
     index++;
 }
-let end = performance.now();
-console.log('Loop start:', loopStart, 'Loop length:', loop.length);
 const part2 = mem.get(loop[(1000000000 - loopStart) % loop.length]).load;
 console.log('Part 2:', part2);
-for (let di = -10; di <= 10; di++) {
-    console.log('off by', di, ':', mem.get(loop[(1000000000 - loopStart + di) % loop.length]).load);
-}
-// console.log('Cycle times:', cycleTimes.map((t, i) => i > 0 ? t - cycleTimes[i - 1] : t));
-console.log('Total time:', end - start);
+
 test('Part 2', () => {
     if (useExample) {
         assert.equal(part2, 64);
