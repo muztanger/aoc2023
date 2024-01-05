@@ -262,13 +262,12 @@ let mem = new Map();
 let loop = [];
 let loopStart = -1;
 let index = 0;
-let c = 1;
 function getState() {
     // return rocks.filter(r => r.type == 'O').map(rock => rock.pos.toString()).join(';');
     // return totalLoad();
     return rocks.filter(r => r.type == 'O').map(rock => rock.pos.toString()).join(';').hashCode();
 }
-for (;; c++) {
+for (;;) {
     const state = getState();
     if (mem.has(state)) {
         console.log('Found loop');
@@ -290,8 +289,10 @@ for (;; c++) {
     }
 
     cycleTimes.push(performance.now());
+    const c = index + 1;
     if (!useExample && c % 1000 === 0) {
-        console.log(`After ${c} cycles: ${totalLoad()}`);
+        const now = performance.now();
+        console.log(`After ${c} cycles: load=${totalLoad()} totalTime=${now - start} ms avgTime=${(now - start) / c} ms`);
     }
     if (useExample) {
         printRocks(rocks);
@@ -315,8 +316,9 @@ test('Part 2', () => {
         assert.notEqual(part2, 96758); // too low
         assert.notEqual(part2, 96927); // too low
         assert.notEqual(part2, 96962); // too low
-        assert.notEqual(part2, 96994); // 96994 incorrect answer
-        assert.notEqual(part2, 97044); // 97044 incorrect answer
+        assert.notEqual(part2, 96994); // incorrect answer
+        assert.notEqual(part2, 97044); // incorrect answer
+        assert.notEqual(part2, 97080); // incorrect answer
         assert.equal(part2, -1);
     }
 });

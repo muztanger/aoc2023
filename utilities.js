@@ -1,4 +1,5 @@
 const fs = require('node:fs/promises');
+const crypto = require('node:crypto');
 
 exports.fetchInput = async function (day, year = 2023) {
   const sessionCookie = await fs.readFile('session_cookie.txt', { encoding: 'utf8' });
@@ -33,13 +34,5 @@ String.prototype.regexIndexOf = function(regex, startpos) {
 };
 
 String.prototype.hashCode = function() {
-  var hash = 0,
-    i, chr;
-  if (this.length === 0) return hash;
-  for (i = 0; i < this.length; i++) {
-    chr = this.charCodeAt(i);
-    hash = ((hash << 5) - hash) + chr;
-    hash |= 0; // Convert to 32bit integer
-  }
-  return hash;
+  return crypto.createHash('sha256').update(this.normalize()).digest('hex');
 };
