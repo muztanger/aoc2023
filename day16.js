@@ -82,13 +82,13 @@ function printGrid(grid) {
     }
 }
 
-function part1(input) {
+function checkEnergy(beamStart, input) {
     let G = input.split('\n').map(line => line.trim().split(''));
     let E = Array(G.length).fill().map(() => Array(G[0].length).fill(0));
-    E[0][0] = 1;
-    printGrid(G);
-    console.log('-------------------');
-    let beams = [new Beam(new Pos(0, 0), new Direction())];
+    E[beamStart.pos.y][beamStart.pos.x] = 1;
+    // printGrid(G);
+    // console.log('-------------------');
+    let beams = [beamStart];
     let lastZeroCount = -1;
     const threshold = 1000000;
     let mem = new Set();
@@ -146,24 +146,53 @@ function part1(input) {
 
         beams.push(beam);
     }
-    // console.log(lastZeroCount, zeroCount());
     return E.reduce((acc, row) => acc + row.filter((x) => x > 0).reduce((a, x) => a + 1, 0), 0);
+
 }
 
+function part1(input) {
+    return checkEnergy(new Beam(new Pos(0, 0), new Direction()), input)
+}
+
+function part2(input) {
+    // check limits
+    const grid = input.split('\n').map(line => line.trim().split(''));
+    const rows = grid.length;
+    const cols = grid[0].length;
+    let result = 0;
+    for (let i = 0; i < rows; i++) {
+        result = Math.max(result, checkEnergy(new Beam(new Pos(0, i), new Direction()), input));
+        result = Math.max(result, checkEnergy(new Beam(new Pos(cols - 1, i), new Direction(Direction.LEFT)), input));
+    }
+    for (let i = 0; i < cols; i++) {
+        result = Math.max(result, checkEnergy(new Beam(new Pos(i, 0), new Direction(Direction.DOWN)), input));
+        result = Math.max(result, checkEnergy(new Beam(new Pos(i, rows - 1), new Direction(Direction.UP)), input));
+    }
+    return result;
+}
+
+const example = `.|...\\....
+|.-.\.....
+.....|-...
+........|.
+..........
+.........\\
+..../.\\\\..
+.-.-/..|..
+.|....-|.\\
+..//.|....`;
+
 test('part1', () => {
-    assert.strictEqual(part1(`.|...\\....
-    |.-.\.....
-    .....|-...
-    ........|.
-    ..........
-    .........\\
-    ..../.\\\\..
-    .-.-/..|..
-    .|....-|.\\
-    ..//.|....`), 46);
+    assert.strictEqual(part1(example), 46);
     const p1Input = part1(input);
     console.log('Part 1:', p1Input);
     assert.notStrictEqual(p1Input, 7315); // too low
     assert.notStrictEqual(p1Input, 7777); // too low
     assert.strictEqual(p1Input, 7927);
 }); 
+
+test('part2', () => {
+    assert.strictEqual(part2(example), 51);
+    const p2Input = part2(input);
+    assert.strictEqual(p2Input, 8246);
+});
