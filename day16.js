@@ -89,7 +89,6 @@ function part1(input) {
     printGrid(G);
     console.log('-------------------');
     let beams = [new Beam(new Pos(0, 0), new Direction())];
-    const zeroCount = () => E.reduce((acc, row) => acc + row.filter(x => x === 0).length, 0);
     let lastZeroCount = -1;
     const threshold = 1000000;
     let mem = new Set();
@@ -166,5 +165,5 @@ test('part1', () => {
     console.log('Part 1:', p1Input);
     assert.notStrictEqual(p1Input, 7315); // too low
     assert.notStrictEqual(p1Input, 7777); // too low
-    assert.strictEqual(p1Input, -1);
+    assert.strictEqual(p1Input, 7927);
 }); 
