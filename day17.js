@@ -38,51 +38,6 @@ class Pos {
     }
 }
 
-class Direction {
-    static RIGHT = new Pos(1, 0);
-    static DOWN = new Pos(0, 1);
-    static LEFT = new Pos(-1, 0);
-    static UP = new Pos(0, -1);
-
-    static dirs = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP];
-
-    constructor(dirPos) {
-        if (dirPos) {
-            this.setDir(dirPos);
-        } else {
-            this.dir = 0;
-        }
-    }
-
-    clone() {
-        return new Direction(this.dir);
-    }
-
-    setDir(pos) {
-        let posIndex = Direction.dirs.findIndex(dir => dir.equals(pos));
-        if (posIndex === -1) {
-            throw new Error('Invalid direction');
-        }
-        this.dir = posIndex;
-    }
-
-    rotateRight() {
-        this.dir = (this.dir + 1) % 4;
-    }
-
-    rotateLeft() {
-        this.dir = (this.dir + 3) % 4;
-    }
-
-    equals(other) {
-        return this.toPos() === other;
-    }
-
-    toPos() {
-        return Direction.dirs[this.dir];
-    }
-}
-
 function part1(input) {
     const G = input.split('\n').map(line => line.split('').map(c => parseInt(c)));
     let end = new Pos(G[0].length - 1, G.length - 1);
@@ -91,7 +46,7 @@ function part1(input) {
     const DOWN = new Pos(0, 1);
     const LEFT = new Pos(-1, 0);
     const UP = new Pos(0, -1);
-    const dirs = [Direction.RIGHT, Direction.DOWN, Direction.LEFT, Direction.UP];
+    const dirs = [RIGHT, DOWN, LEFT, UP];
 
     let queue = [];
     let mem = new Map();
@@ -114,6 +69,7 @@ function part1(input) {
         if (state.pos.equals(end)) {
             minEnergy = Math.min(minEnergy, energy);
             // console.log(state.pos.toString(), energy);
+            continue;
         }
 
         if (state.count < 3) {
@@ -130,4 +86,5 @@ function part1(input) {
 
 test('part1', () => {
     assert.strictEqual(part1(example), 102);
+    // assert.strictEqual(part1(input), 1102);
 });
