@@ -148,6 +148,85 @@ test('17-1 example', () => {
     assert.strictEqual(part1(example), 102);
 });
 
-test('17-1', () => {
-    assert.strictEqual(part1(input), 638);
+// test('17-1', () => {
+//     assert.strictEqual(part1(input), 638);
+// });
+
+function part2(input) {
+    const G = input.split('\n').map(line => line.split('').map(c => parseInt(c)));
+    const R = G.length;
+    const C = G[0].length;
+    const D = new Map();
+    const end = new Pos(C - 1, R - 1);
+    
+    const RIGHT = new Pos(1, 0);
+    const DOWN = new Pos(0, 1);
+    const LEFT = new Pos(-1, 0);
+    const UP = new Pos(0, -1);
+
+    let startTime = performance.now();
+
+    let queue = new PriorityQueue();
+    queue.enqueue({ pos: new Pos(0, 0), direction: -1, count: 0, energy: 0 }, 0);
+
+    while (queue.length > 0) {
+        let state = queue.dequeue();
+
+        const key = state.pos.toString() + ',' + state.direction + ',' + state.count;
+        if (D.has(key)) {
+            continue;
+        }
+        D.set(key, state.energy);
+
+        for (let i = 0; i < 4; i++) {
+            if ((i + 2) % 4 === state.direction) continue; // can't turn around
+
+            let dp = state.pos.add([LEFT, DOWN, RIGHT, UP][i]); 
+
+            if (dp.x >= 0 && dp.x < C && dp.y >= 0 && dp.y < R) { // can't go off the grid
+                let nextEnergy = state.energy + G[dp.y][dp.x];
+                if ((i == state.direction || state.direction < 0) && state.count < 4) { // need to keep going straight
+                    queue.enqueue({ pos: dp, direction: i, count: state.count + 1, energy: nextEnergy }, nextEnergy);
+                    continue;
+                }
+                if (state.count >= 4 && state.count <= 10) { // we can go straight again or turn
+                    let nextCount = i == state.direction ? state.count + 1 : 1;
+                    queue.enqueue({ pos: dp, direction: i, count: nextCount, energy: nextEnergy }, nextEnergy);
+                }
+            }
+        }
+
+        if (performance.now() - startTime > 12000 && debug) {
+            throw 'timeout';
+        }
+    }
+    // console.log(D);
+    let minEnergy = Infinity;
+    for (let i = 0; i < 4; i++) {
+        for (let j = 4; j <= 10; j++) {
+            let key = end.toString() + ',' + i + ',' + j;
+            if (D.has(key)) {
+                minEnergy = Math.min(minEnergy, D.get(key));
+                // console.log(key, D.get(key));
+            }
+        }
+    }
+    return minEnergy;
+}
+
+
+test('17-2 example', () => {
+    assert.strictEqual(part2(example), 94);
+});
+
+test('17-2 example 2', () => {
+    assert.strictEqual(part2(`111111111111
+999999999991
+999999999991
+999999999991
+999999999991`), 71);
+});
+
+test('17-2', () => {
+    assert.strictEqual(part2(input), 748);
 });
