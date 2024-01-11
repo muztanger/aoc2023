@@ -64,7 +64,6 @@ class PriorityQueue {
 }
 
 test('PriorityQueue', () => {
-    let heap = [];
     let queue = new PriorityQueue();
     queue.enqueue('a', 3);
     queue.enqueue('b', 2);
