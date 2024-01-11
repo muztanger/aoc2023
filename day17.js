@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const ut = require('./utilities.js');
+const { performance } = require('perf_hooks');
+const inspector = require('inspector');
 
 const input = fs.readFileSync(path.basename(__filename).replace(/\.js$/, '.in'), { encoding: 'utf8' });
 const example = `2413432311323
@@ -30,6 +32,9 @@ class Pos {
     equals(other) {
         return this.x === other.x && this.y === other.y;
     }
+    abs() {
+        return Math.abs(this.x) + Math.abs(this.y);
+    }
     toString() {
         return this.x + ',' + this.y;
     }
@@ -38,53 +43,111 @@ class Pos {
     }
 }
 
+class PriorityQueue {
+    constructor() {
+        this.queue = [];
+    }
+    enqueue(item, priority) {
+        this.queue.push({item, priority});
+        this.queue.sort((a, b) => a.priority - b.priority);
+    }
+    dequeue() {
+        if (this.isEmpty()) {
+            return null;
+        }
+        return this.queue.shift().item;
+    }
+    isEmpty() {
+        return this.queue.length === 0;
+    }
+    get length () {
+        return this.queue.length;
+    }
+}
+
+test('PriorityQueue', () => {
+    let queue = new PriorityQueue();
+    queue.enqueue('a', 3);
+    queue.enqueue('b', 2);
+    queue.enqueue('c', 1);
+    assert.strictEqual(queue.dequeue(), 'c');
+    assert.strictEqual(queue.dequeue(), 'b');
+    assert.strictEqual(queue.dequeue(), 'a');
+    assert.strictEqual(queue.dequeue(), null);
+
+    queue.enqueue('a', 3);
+    queue.enqueue('b', 2);
+    queue.enqueue('c', 1);
+    queue.enqueue('d', 2);
+    queue.enqueue('e', 3);
+    assert.strictEqual(queue.dequeue(), 'c');
+    assert.strictEqual(queue.dequeue(), 'b');
+    assert.strictEqual(queue.dequeue(), 'd');
+    assert.strictEqual(queue.dequeue(), 'a');
+    assert.strictEqual(queue.dequeue(), 'e');
+
+});
+
+const debug = inspector.url() !== undefined;
+
 function part1(input) {
     const G = input.split('\n').map(line => line.split('').map(c => parseInt(c)));
-    let end = new Pos(G[0].length - 1, G.length - 1);
-
+    const R = G.length;
+    const C = G[0].length;
+    const D = new Map();
+    const end = new Pos(C - 1, R - 1);
+    
     const RIGHT = new Pos(1, 0);
     const DOWN = new Pos(0, 1);
     const LEFT = new Pos(-1, 0);
     const UP = new Pos(0, -1);
-    const dirs = [RIGHT, DOWN, LEFT, UP];
 
-    let queue = [];
-    let mem = new Map();
-    let minEnergy = Number.MAX_SAFE_INTEGER;
-    queue.push({ pos: new Pos(0, 0), direction: 0, count: 0, energy: 0 });
-    queue.push({ pos: new Pos(0, 0), direction: 1, count: 0, energy: 0 });
+    let startTime = performance.now();
+
+    let queue = new PriorityQueue();
+    queue.enqueue({ pos: new Pos(0, 0), direction: -1, count: 0, energy: 0 }, 0);
+
     while (queue.length > 0) {
-        let state = queue.shift();
+        let state = queue.dequeue();
 
-        if (state.pos.x < 0 || state.pos.x >= G[0].length || state.pos.y < 0 || state.pos.y >= G.length) {
+        const key = state.pos.toString() + ',' + state.direction + ',' + state.count;
+        if (D.has(key)) {
             continue;
         }
+        D.set(key, state.energy);
 
-        if (mem.has(state.pos.toString()) && mem.get(state.pos.toString()) < state.energy) {
-            continue;
-        }
-        mem.set(state.pos.toString(), state.energy);
-
-        const energy = state.energy + G[state.pos.y][state.pos.x];
-        if (state.pos.equals(end)) {
-            minEnergy = Math.min(minEnergy, energy);
-            // console.log(state.pos.toString(), energy);
-            continue;
-        }
-
-        if (state.count < 3) {
-            queue.push({ pos: state.pos.add(dirs[state.direction]), direction: state.direction, count: state.count + 1, energy });
+        for (let i = 0; i < 4; i++) {
+            if ((i + 2) % 4 === state.direction) continue;
+            if (i == state.direction && state.count >= 3) continue;
+            let dp = state.pos.add([LEFT, DOWN, RIGHT, UP][i]); 
+            if (dp.x >= 0 && dp.x < C && dp.y >= 0 && dp.y < R) {
+                let nextEnergy = state.energy + G[dp.y][dp.x];
+                queue.enqueue({ pos: dp, direction: i, count: (i == state.direction ? state.count + 1: 1), energy: nextEnergy }, nextEnergy);
+            }
         }
 
-        let dirIndex = (state.direction + 1) % 4;
-        queue.push({ pos: state.pos.add(dirs[dirIndex]), direction: dirIndex, count: 1, energy });
-        dirIndex = (state.direction + 3) % 4;
-        queue.push({ pos: state.pos.add(dirs[dirIndex]), direction: dirIndex, count: 1, energy });
+        if (performance.now() - startTime > 12000 && debug) {
+            throw 'timeout';
+        }
     }
-    return minEnergy - G[0][0];
+    // console.log(D);
+    let minEnergy = Infinity;
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            let key = end.toString() + ',' + i + ',' + j;
+            if (D.has(key)) {
+                minEnergy = Math.min(minEnergy, D.get(key));
+                // console.log(key, D.get(key));
+            }
+        }
+    }
+    return minEnergy;
 }
 
-test('part1', () => {
+test('17-1 example', () => {
     assert.strictEqual(part1(example), 102);
-    // assert.strictEqual(part1(input), 1102);
+});
+
+test('17-1', () => {
+    assert.strictEqual(part1(input), 638);
 });
